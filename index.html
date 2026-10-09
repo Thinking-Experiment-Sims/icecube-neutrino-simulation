@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Thinking Experiment: IceCube Neutrino Observatory</title>
+  <meta name="description" content="Interactive Physics Simulation Suite for the 2026 Nobel Prize in Physics awarded to Francis Halzen. Deep inelastic scattering, Cherenkov radiation, cosmic accelerators, and IceCube digital twin.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation & Brand Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-logo">🧊</div>
+      <div class="brand-text">
+        <h1>THE THINKING EXPERIMENT <span>· ICECUBE</span></h1>
+        <div class="brand-subtitle">2026 Nobel Prize in Physics · Francis Halzen</div>
+      </div>
+    </div>
+
+    <!-- Mode Switcher: Guided Seminar Walkthrough (Default) vs Sandbox -->
+    <div class="mode-toggle-group">
+      <button class="btn-mode active" id="modeGuided">🎙️ Guided Seminar Walkthrough</button>
+      <button class="btn-mode" id="modeSandbox">🔬 Free Sandbox Mode</button>
+    </div>
+
+    <!-- Header Actions (Audio, Fullscreen) -->
+    <div class="header-actions">
+      <button class="btn-icon" id="btnAudioToggle" title="Toggle Accessible Sonification (PER UX)">
+        <span id="audioIcon">🔇</span> <span id="audioLabel">Audio: OFF</span>
+      </button>
+      <button class="btn-icon" id="btnFullscreen" title="Toggle Fullscreen">⛶</button>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <main class="app-main">
+
+    <!-- VIEW 1: GUIDED SEMINAR WALKTHROUGH (Default) -->
+    <div class="view-guided" id="viewGuided">
+      <aside class="walkthrough-sidebar" id="walkthroughSidebar">
+        <!-- Injected dynamically by guidedWalkthrough.js -->
+      </aside>
+      <section class="walkthrough-stage" id="stageWalkthrough">
+        <!-- Houses the active 3D or 2D simulation synchronized to the current slide -->
+        <div id="activeSimContainer" style="width: 100%; height: 100%; position: relative;"></div>
+      </section>
+    </div>
+
+    <!-- VIEW 2: SANDBOX EXPLORATION MODE -->
+    <div class="view-sandbox" id="viewSandbox">
+      <nav class="sandbox-tab-bar">
+        <button class="tab-btn" data-tab="sources">🔭 1. Cosmic Engine (Sources & B-Fields)</button>
+        <button class="tab-btn" data-tab="dis">⚡ 2. Subatomic Collision (Quark DIS)</button>
+        <button class="tab-btn" data-tab="cherenkov">🌊 3. Cherenkov Optics ("Sonic Boom for Light")</button>
+        <button class="tab-btn active" data-tab="detector">🧊 4. IceCube 3D Detector (Digital Twin)</button>
+        <button class="tab-btn" data-tab="sigmalab">📊 5. 5-Sigma Discovery Challenge</button>
+      </nav>
+
+      <div class="sandbox-content" id="sandboxContent">
+        <!-- Content swapped based on active tab -->
+      </div>
+    </div>
+
+    <!-- Shared 3D Detector Viewport Template (Can be docked in Guided or Sandbox) -->
+    <div id="detectorTemplate" style="display: none;">
+      <div id="viewport3d"></div>
+
+      <!-- Live Telemetry HUD -->
+      <div class="hud-overlay">
+        <div class="hud-card">
+          <div class="hud-title" id="hudEventTitle">IceCube Live Event Display</div>
+          <div class="hud-metric-row">
+            <span class="hud-metric-label">Event Preset:</span>
+            <span class="hud-metric-val" id="hudEventName">TXS 0506+056 (2017)</span>
+          </div>
+          <div class="hud-metric-row">
+            <span class="hud-metric-label">Energy:</span>
+            <span class="hud-metric-val" id="hudEnergy">290 TeV</span>
+          </div>
+          <div class="hud-metric-row">
+            <span class="hud-metric-label">Topology:</span>
+            <span class="hud-metric-val" id="hudTopology">Upgoing Muon Track</span>
+          </div>
+          <div class="hud-metric-row">
+            <span class="hud-metric-label">Triggered DOMs:</span>
+            <span class="hud-metric-val" id="hudDOMHits">78 / 5,160</span>
+          </div>
+          <div class="hud-metric-row">
+            <span class="hud-metric-label">Time Window:</span>
+            <span class="hud-metric-val" id="hudTimeSpan">~1,840 ns</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scrubber, Presets & Controls Bar -->
+      <div class="controls-bottom-bar">
+        <div class="scrubber-group">
+          <button class="btn-play" id="btnPlayPause" title="Play/Pause Event Time">▶</button>
+          <input type="range" class="time-slider" id="scrubberTime" min="0" max="3000" value="3000">
+          <span class="time-display" id="dispTime">3,000 ns</span>
+        </div>
+
+        <div class="presets-group">
+          <button class="btn-preset" data-preset="bert_2013">2013 Bert (1 PeV)</button>
+          <button class="btn-preset active" data-preset="txs0506_2017">2017 TXS Blazar</button>
+          <button class="btn-preset" data-preset="ngc1068_2022">2022 NGC 1068</button>
+          <button class="btn-preset" data-preset="milkyway_2023">2023 Milky Way</button>
+          <button class="btn-preset" data-preset="background_muon">Atmospheric Muon</button>
+        </div>
+
+        <div class="camera-views-group">
+          <button class="btn-cam" data-cam="overview">3D View</button>
+          <button class="btn-cam" data-cam="topdown">Sky Map</button>
+          <button class="btn-cam" data-cam="elevation">Depth</button>
+          <button class="btn-cam" data-cam="deepcore">DeepCore</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 1 2D Template: Sources -->
+    <div id="sourcesTemplate" style="display: none;">
+      <div class="canvas-panel">
+        <canvas id="canvasSources"></canvas>
+        <div class="panel-controls-drawer">
+          <div class="control-item">
+            <label>B-Field: <strong id="valBField">2.5 nG</strong></label>
+            <input type="range" id="sliderBField" min="0" max="10" step="0.5" value="2.5">
+          </div>
+          <div class="control-item">
+            <label>
+              <input type="checkbox" id="checkDustTorus" checked> Dust Torus (NGC 1068 Obscuration)
+            </label>
+          </div>
+          <div class="control-item">
+            <label>Channel: </label>
+            <select id="selectChannel" style="background: #162038; color: #fff; border: 1px solid rgba(0,243,255,0.3); border-radius: 4px; padding: 4px 8px;">
+              <option value="both">Both (pions & gammas)</option>
+              <option value="pions_charged">Charged Pions (Neutrinos Only)</option>
+              <option value="pions_neutral">Neutral Pions (Gamma Rays Only)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 2 2D Template: Subatomic DIS -->
+    <div id="disTemplate" style="display: none;">
+      <div class="canvas-panel">
+        <canvas id="canvasDIS"></canvas>
+        <div class="panel-controls-drawer">
+          <div class="control-item">
+            <label>Flavor: </label>
+            <select id="selectFlavor" style="background: #162038; color: #fff; border: 1px solid rgba(0,243,255,0.3); border-radius: 4px; padding: 4px 8px;">
+              <option value="mu">Muon Neutrino (ν_μ → Track)</option>
+              <option value="e">Electron Neutrino (ν_e → Cascade)</option>
+              <option value="tau">Tau Neutrino (ν_τ → Double Bang)</option>
+            </select>
+          </div>
+          <div class="control-item">
+            <label>Current: </label>
+            <select id="selectMode" style="background: #162038; color: #fff; border: 1px solid rgba(0,243,255,0.3); border-radius: 4px; padding: 4px 8px;">
+              <option value="CC">Charged Current (W± Exchange)</option>
+              <option value="NC">Neutral Current (Z⁰ Exchange)</option>
+            </select>
+          </div>
+          <div class="control-item">
+            <label>Inelasticity y (Hadronic %): <strong id="valY">0.28</strong></label>
+            <input type="range" id="sliderY" min="0.05" max="0.95" step="0.01" value="0.28">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 3 2D Template: Cherenkov Wave Tank -->
+    <div id="cherenkovTemplate" style="display: none;">
+      <div class="canvas-panel">
+        <canvas id="canvasCherenkov"></canvas>
+        <div class="panel-controls-drawer">
+          <div class="control-item">
+            <label>Particle Speed β (v/c): <strong id="valBeta">0.950</strong></label>
+            <input type="range" id="sliderBeta" min="0.65" max="0.999" step="0.005" value="0.95">
+          </div>
+          <div class="control-item">
+            <label>Medium Index n: <strong id="valIndex">1.31 (Ice)</strong></label>
+            <select id="selectIndex" style="background: #162038; color: #fff; border: 1px solid rgba(0,243,255,0.3); border-radius: 4px; padding: 4px 8px;">
+              <option value="1.31">Antarctic Ice (n = 1.31)</option>
+              <option value="1.00">Vacuum (n = 1.00, No shock)</option>
+              <option value="1.33">Liquid Water (n = 1.33)</option>
+              <option value="1.50">Glass (n = 1.50)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 5 Template: 5-Sigma Discovery Lab -->
+    <div id="sigmalabTemplate" style="display: none;">
+      <div id="containerSigmaLab" style="width: 100%; height: 100%; overflow-y: auto;"></div>
+    </div>
+
+  </main>
+
+  <!-- Local Offline-Ready Scripts -->
+  <script src="js/libs/three.min.js"></script>
+  <script src="js/libs/OrbitControls.js"></script>
+
+  <!-- Physics Engine & Simulation Modules -->
+  <script src="js/physics.js"></script>
+  <script src="js/detector.js"></script>
+  <script src="js/renderer3d.js"></script>
+  <script src="js/modules2d.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/guidedWalkthrough.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
