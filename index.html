@@ -31,29 +31,33 @@
       </div>
     </div>
     <h1>Ghost Particle Lab</h1>
-    <p>Five interactive presentation modules behind Francis Halzen and the IceCube Neutrino Observatory. Change one parameter at a time and observe how the physics responds.</p>
+    <p>Six interactive presentation modules behind Francis Halzen and the IceCube Neutrino Observatory. Change one parameter at a time and observe how the physics responds.</p>
   </header>
 
   <!-- Navigation Tabs Strip -->
   <nav class="tabs" role="tablist" aria-label="Presentation Modules">
     <button class="tab" role="tab" id="t0" aria-selected="true" aria-controls="p0">
       <span>1 · Messengers</span>
-      <small>Who keeps the return address?</small>
+      <small>Cosmic accelerators &amp; arrival directions</small>
     </button>
     <button class="tab" role="tab" id="t1" aria-selected="false" aria-controls="p1">
       <span>2 · Collisions &amp; Cascades</span>
       <small>Feynman diagrams &amp; quark showers</small>
     </button>
     <button class="tab" role="tab" id="t2" aria-selected="false" aria-controls="p2">
-      <span>3 · Ice Detector</span>
-      <small>Figure 3 schematic &amp; Cherenkov glow</small>
+      <span>3 · Observatory Architecture</span>
+      <small>Deep South Pole ice array</small>
     </button>
     <button class="tab" role="tab" id="t3" aria-selected="false" aria-controls="p3">
-      <span>4 · Why a Cubic km</span>
-      <small>Rare cross-sections &amp; opaque Earth</small>
+      <span>4 · Cherenkov Detection</span>
+      <small>Relativistic shockwaves in ice</small>
     </button>
     <button class="tab" role="tab" id="t4" aria-selected="false" aria-controls="p4">
-      <span>5 · How Sure is Sure</span>
+      <span>5 · Why a Cubic km</span>
+      <small>Rare cross-sections &amp; opaque Earth</small>
+    </button>
+    <button class="tab" role="tab" id="t5" aria-selected="false" aria-controls="p5">
+      <span>6 · How Sure is Sure</span>
       <small>From 4.2σ to 5.7σ discovery</small>
     </button>
   </nav>
@@ -98,8 +102,20 @@
     <p class="from">Nobel Scientific Background Figure 2: Deep Inelastic Scattering (CC vs. NC channels) &middot; Quark fragmentation.</p>
     <div class="grid">
       <div class="stage">
-        <canvas id="cDIS" width="900" height="440" aria-label="Interactive Feynman diagram showing deep inelastic scattering split by collision channel with hadronic cascade fragmentation."></canvas>
+        <canvas id="cDIS" width="900" height="380" aria-label="Interactive Feynman diagram showing deep inelastic scattering split by collision channel with hadronic cascade fragmentation."></canvas>
         
+        <!-- Inelasticity Split Energy HUD Card (Outside canvas to prevent overlap) -->
+        <div class="inelasticity-card" id="inelasticityCard">
+          <div class="inelasticity-head">
+            <span><strong>Inelasticity Fraction \(y = \frac{E_{\text{had}}}{E_\nu}\):</strong> <span id="yValDisplay" style="font-family:var(--font-mono); font-weight:700; color:var(--teal-deep);">0.28</span> (<span id="yPercentHad">28%</span> Hadron / <span id="yPercentLep">72%</span> Lepton)</span>
+            <span class="subtle-note">Partitions collision energy between hadronic shower and outgoing lepton</span>
+          </div>
+          <div class="split-bar-track">
+            <div class="split-bar-had" id="splitHadBar" style="width: 28%;">Hadron Cascade: 28%</div>
+            <div class="split-bar-lep" id="splitLepBar" style="width: 72%;">Outgoing Lepton: 72%</div>
+          </div>
+        </div>
+
         <!-- Hadronic Cascade Explainer Callout Card -->
         <div class="callout-card">
           <h4><span>🔬</span> What is a Hadronic Cascade (Shower X)?</h4>
@@ -107,7 +123,7 @@
             When the incoming PeV neutrino interacts with a quark in the proton or neutron with huge momentum transfer (\(Q^2 \gg 1\text{ GeV}^2\)), the struck quark is violently ripped out of the nucleon.
           </p>
           <p>
-            Because of <strong>color confinement</strong> (quarks cannot exist alone), the stretching gluon color flux tube snaps, creating quark-antiquark pairs (\(q\bar{q}\)) from the vacuum. This produces a collimated, relativistic spray of charged hadrons (\(\pi^{\pm}, p\)) and neutral hadrons (\(\pi^0 \to 2\gamma\)). Traveling faster than light in ice (\(c/n\)), the charged hadrons emit the intense blue Cherenkov flash recorded by the optical sensors!
+            Because of <strong>color confinement</strong> (quarks cannot exist alone in nature), the stretching gluon color flux tube snaps, creating quark-antiquark pairs (\(q\bar{q}\)) from the vacuum. This produces a collimated, relativistic spray of charged hadrons (\(\pi^{\pm}, p\)) and neutral hadrons (\(\pi^0 \to 2\gamma\)). Traveling faster than light in ice (\(c/n\)), the charged hadrons emit the intense blue Cherenkov flash recorded by the optical sensors!
           </p>
         </div>
       </div>
@@ -139,33 +155,75 @@
     </div>
   </section>
 
-  <!-- ==================== SLIDE 3: ICE DETECTOR & FIGURE 3 ==================== -->
+  <!-- ==================== SLIDE 3: OBSERVATORY ARCHITECTURE ==================== -->
   <section class="panel" id="p2" role="tabpanel" aria-labelledby="t2" hidden>
-    <h2 class="lead">A cubic kilometer of polar ice turned into an optical telescope: 86 strings, 5,160 sensors, and Cherenkov cones.</h2>
-    <p class="from">Deck slides: Use the ice itself as the detector &middot; How a neutrino makes light &middot; Nobel Scientific Background Figure 3.</p>
+    <h2 class="lead">A cubic kilometer of polar ice instrumented with 5,160 optical sensors across 86 vertical strings.</h2>
+    <p class="from">Scientific Background: IceCube Neutrino Observatory Architecture at the South Pole.</p>
     <div class="grid">
       <div class="stage">
-        <!-- View Container 1: Official Schematic Figure 3 -->
         <div class="figure-wrap" id="fig3Container">
-          <img src="assets/figure3-icecube-schematic.png" alt="A schematic illustration of the IceCube Neutrino Observatory." loading="eager">
+          <img src="assets/figure3-icecube-schematic.png" alt="Schematic illustration of the IceCube Neutrino Observatory array embedded in polar ice." loading="eager">
           <div class="figure-caption">
-            <strong>Figure 3.</strong> A schematic illustration of the IceCube Neutrino Observatory. <em>Figure credit: IceCube Collaboration.</em>
+            Schematic illustration of the IceCube Neutrino Observatory array embedded between 1,450 m and 2,450 m in polar ice at the Amundsen-Scott South Pole Station. <em>Figure credit: IceCube Collaboration.</em>
           </div>
         </div>
 
-        <!-- View Container 2: Live Cherenkov Simulation Canvas -->
-        <div id="liveDetectorContainer" hidden>
-          <canvas id="c2" width="960" height="480" aria-label="Side view of strings of sensors in ice. A neutrino creates a charged particle that emits a cone of Cherenkov light and sensors light up in time order."></canvas>
+        <div class="arch-specs">
+          <div class="arch-card">
+            <span class="arch-card-num">86 Strings</span>
+            <span class="arch-card-label">Hot-Water Drilled</span>
+            <span class="arch-card-desc">Cables melted 2,500 m deep into the South Pole ice sheet using 5-megawatt hot-water drill jets.</span>
+          </div>
+          <div class="arch-card">
+            <span class="arch-card-num">5,160 DOMs</span>
+            <span class="arch-card-label">Digital Optical Modules</span>
+            <span class="arch-card-desc">Each houses a 10-inch Hamamatsu PMT, digitizer, and nanosecond calibration LEDs.</span>
+          </div>
+          <div class="arch-card">
+            <span class="arch-card-num">1 km³</span>
+            <span class="arch-card-label">Instrumented Volume</span>
+            <span class="arch-card-desc">One gigaton of ultra-pure glacial ice compressed over 100,000 years with absorption length &gt;100 m.</span>
+          </div>
+          <div class="arch-card">
+            <span class="arch-card-num">1.45–2.45 km</span>
+            <span class="arch-card-label">Deep Ice Shielding</span>
+            <span class="arch-card-desc">Deep polar ice shields the detector from cosmic ray muon backgrounds and surface weather.</span>
+          </div>
         </div>
       </div>
 
       <aside class="ctl">
-        <h2>Detector View</h2>
-        <div class="btns" id="viewToggleGroup" role="group" aria-label="Display mode">
-          <button class="b" data-view="figure3" aria-pressed="true">Official Schematic (Figure 3)</button>
-          <button class="b" data-view="live" aria-pressed="false">Live Cherenkov Event</button>
+        <h2>Observatory Highlights</h2>
+        <div class="arch-card" style="background:#ffffff; border-color:var(--teal);">
+          <span class="arch-card-label" style="color:var(--teal-deep); font-size:13.5px;">❄️ Glacial Ice Clarity</span>
+          <span class="arch-card-desc">At depths below 1.4 km, immense pressure compresses all air bubbles into clathrate hydrates. The ice is clearer than any laboratory-distilled water on Earth.</span>
         </div>
+        <div class="arch-card" style="background:#ffffff; border-color:var(--teal);">
+          <span class="arch-card-label" style="color:var(--teal-deep); font-size:13.5px;">🎯 DeepCore Sub-Array</span>
+          <span class="arch-card-desc">8 densely spaced strings at the very bottom center of the array with high-quantum-efficiency sensors, lowering the energy threshold down to 10 GeV.</span>
+        </div>
+        <div class="arch-card" style="background:#ffffff; border-color:var(--teal);">
+          <span class="arch-card-label" style="color:var(--teal-deep); font-size:13.5px;">📡 IceTop Surface Array</span>
+          <span class="arch-card-desc">81 surface stations (162 ice tanks) directly above the strings tag descending cosmic ray air showers to eliminate down-going atmospheric muon backgrounds.</span>
+        </div>
+        <div class="arch-card" style="background:#ffffff; border-color:var(--amber-fill);">
+          <span class="arch-card-label" style="color:var(--amber); font-size:13.5px;">🏆 The Nobel Innovation</span>
+          <span class="arch-card-desc">Francis Halzen realized that instead of building an artificial detector tank, humankind could use the natural Antarctic ice cap itself as both the target and the Cherenkov radiator.</span>
+        </div>
+      </aside>
+    </div>
+  </section>
 
+  <!-- ==================== SLIDE 4: CHERENKOV DETECTION ==================== -->
+  <section class="panel" id="p3" role="tabpanel" aria-labelledby="t3" hidden>
+    <h2 class="lead">When secondary charged particles exceed the speed of light in ice (\(v > c/n\)), they emit blue Cherenkov shockwaves recorded across strings of optical sensors.</h2>
+    <p class="from">Optics of Cherenkov radiation: Shockwave angle \(\cos\theta_c = \frac{1}{\beta n} \approx 41^\circ\) in polar ice (\(n = 1.31\)).</p>
+    <div class="grid">
+      <div class="stage">
+        <canvas id="c2" width="960" height="480" aria-label="Side view of strings of sensors in ice. A neutrino creates a charged particle that emits a cone of Cherenkov light and sensors light up in time order."></canvas>
+      </div>
+
+      <aside class="ctl">
         <h2>Event Generator</h2>
         <div class="fld">
           <span class="lab">Interaction Topology</span>
@@ -201,8 +259,8 @@
     </div>
   </section>
 
-  <!-- ==================== SLIDE 4: SCALE & EARTH ABSORPTION ==================== -->
-  <section class="panel" id="p3" role="tabpanel" aria-labelledby="t3" hidden>
+  <!-- ==================== SLIDE 5: SCALE & EARTH ABSORPTION ==================== -->
+  <section class="panel" id="p4" role="tabpanel" aria-labelledby="t4" hidden>
     <h2 class="lead">Neutrinos almost never interact, so the target must be enormous. At high energy, so is the shadow of the Earth.</h2>
     <p class="from">Deck slides: A cubic kilometer of ice with 5,160 sensors &middot; What is a neutrino &middot; Cross sections &amp; mean free path.</p>
     <div class="grid">
@@ -236,8 +294,8 @@
     </div>
   </section>
 
-  <!-- ==================== SLIDE 5: HOW SURE IS SURE ==================== -->
-  <section class="panel" id="p4" role="tabpanel" aria-labelledby="t4" hidden>
+  <!-- ==================== SLIDE 6: HOW SURE IS SURE ==================== -->
+  <section class="panel" id="p5" role="tabpanel" aria-labelledby="t5" hidden>
     <h2 class="lead">A few hundred cosmic signal events hide inside tens of thousands of atmospheric background events. Systematic modeling decides who wins.</h2>
     <p class="from">Deck slides: 2013 first cosmic neutrinos &middot; 2022 NGC 1068 (4.2&sigma;) &middot; 2026 Galactic plane discovery (5.7&sigma;).</p>
     <div class="grid">

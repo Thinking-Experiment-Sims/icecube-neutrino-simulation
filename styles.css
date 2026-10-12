@@ -133,7 +133,7 @@ header p {
 /* ---------- Tabs Strip ---------- */
 .tabs {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
   gap: 8px;
 }
 
@@ -497,3 +497,107 @@ table.sig th {
   font-style: normal;
   color: var(--ink);
 }
+
+/* Inelasticity Split HUD Card */
+.inelasticity-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(15, 126, 155, 0.04);
+}
+
+.inelasticity-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13.5px;
+}
+
+.inelasticity-head strong {
+  color: var(--teal-deep);
+}
+
+.subtle-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.split-bar-track {
+  width: 100%;
+  height: 28px;
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: flex;
+  overflow: hidden;
+  font-family: var(--font-d);
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.split-bar-had {
+  background: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.1s ease;
+  min-width: 32px;
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+
+.split-bar-lep {
+  background: var(--amber-fill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.1s ease;
+  min-width: 32px;
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+
+/* Architecture Specs Grid */
+.arch-specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.arch-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.arch-card-num {
+  font-family: var(--font-d);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--teal-deep);
+}
+
+.arch-card-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.arch-card-desc {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+

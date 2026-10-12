@@ -83,10 +83,10 @@
   // SLIDE 1: MESSENGERS (Cosmic Engine & Arrival Direction Histograms)
   // =========================================================================
   const S1 = {
-    W: 900, H: 380, SX: 75, DX: 830, v: 420, B: 35, tau: 1.5,
+    W: 900, H: 380, SX: 80, DX: 825, v: 420, B: 35, tau: 1.5,
     show: { cr: true, g: true, n: true },
     run: true, parts: [], flash: [], acc: { cr: 0, g: 0, n: 0 }, rate: 9, nb: 45,
-    hist: {}, em: {}, fin: {}, ar: {}, ss: {}, sw: []
+    hist: {}, em: {}, fin: {}, ar: {}, ss: {}
   };
 
   function reset1() {
@@ -98,19 +98,20 @@
   }
   reset1();
 
-  for (let i = 0; i < 70; i++) {
-    S1.sw.push({ x: 250 + Math.random() * 500, y: Math.random() * S1.H, r: 6 + Math.random() * 12, a: Math.random() * 6.28 });
-  }
-
   const g1 = ctx("#c1", S1.W, S1.H);
   const gh = ctx("#h1", 900, 170);
 
   function spawn1(t) {
     S1.em[t]++;
-    const p = { t, x: S1.SX, y: S1.H / 2, a: (Math.random() - 0.5) * 0.04, tr: [], ab: null };
-    if (t === "g" && Math.random() < 1 - Math.exp(-S1.tau)) {
-      p.ab = 130 + Math.random() * 130;
-    }
+    const p = {
+      t,
+      x: S1.SX,
+      y: S1.H / 2 + (t === "cr" ? (Math.random() - 0.5) * 12 : 0),
+      a: (Math.random() - 0.5) * 0.05,
+      tr: [],
+      dead: 0,
+      checkedDust: false
+    };
     S1.parts.push(p);
   }
 
@@ -125,20 +126,36 @@
       }
     });
 
+    const torusX = S1.SX + 40, torusY = S1.H / 2;
+
     for (const p of S1.parts) {
       p.x += Math.cos(p.a) * S1.v * dt;
       p.y += Math.sin(p.a) * S1.v * dt;
-      if (p.t === "cr" && p.x > 240 && p.x < 770) {
-        p.a += gauss() * (S1.B / 100) * 0.06 * Math.sqrt(dt * 60);
-      }
-      p.tr.push([p.x, p.y]);
-      if (p.tr.length > 18) p.tr.shift();
 
-      if (p.t === "g" && p.ab !== null && p.x >= p.ab) {
-        p.dead = 1;
-        S1.fin.g++;
-        S1.flash.push({ x: p.x, y: p.y, l: 0.6, c: "ab" });
-      } else if (p.x >= S1.DX) {
+      // Dust Torus absorption for Gamma Rays
+      if (p.t === "g" && !p.checkedDust && !p.dead) {
+        const distTorus = Math.hypot(p.x - torusX, p.y - torusY);
+        if (distTorus < 55) {
+          p.checkedDust = true;
+          // Absorption probability based on optical depth tau: 1 - exp(-tau)
+          if (Math.random() < (1 - Math.exp(-S1.tau))) {
+            p.dead = 1;
+            S1.fin.g++;
+            S1.flash.push({ x: p.x, y: p.y, l: 0.65, c: "ab" });
+          }
+        }
+      }
+
+      // Protons curve in turbulent magnetic field
+      if (p.t === "cr" && p.x > 150 && p.x < S1.DX) {
+        const bVal = Math.sin((p.x * 0.02) + (p.y * 0.03)) * (S1.B / 100);
+        p.a += (bVal * 0.065 + gauss() * (S1.B / 100) * 0.035) * Math.sqrt(dt * 60);
+      }
+
+      p.tr.push([p.x, p.y]);
+      if (p.tr.length > 20) p.tr.shift();
+
+      if (p.x >= S1.DX) {
         p.dead = 1;
         S1.fin[p.t]++;
         S1.ar[p.t]++;
@@ -152,6 +169,7 @@
         S1.fin[p.t]++;
       }
     }
+
     S1.parts = S1.parts.filter((p) => !p.dead);
     for (const f of S1.flash) f.l -= dt;
     S1.flash = S1.flash.filter((f) => f.l > 0);
@@ -168,82 +186,117 @@
     g.fillStyle = C.surface;
     g.fillRect(0, 0, W, H);
 
-    // Magnetic field turbulent region
-    g.fillStyle = C.chip;
-    g.globalAlpha = 0.5;
-    g.fillRect(240, 0, 530, H);
-    g.globalAlpha = 1;
+    const agnX = S1.SX, agnY = H / 2;
+    const earthX = S1.DX, earthY = H / 2;
 
-    g.strokeStyle = C.teal;
-    g.lineWidth = 1.4;
-    g.globalAlpha = 0.06 + (S1.B / 100) * 0.35;
-    for (const s of S1.sw) {
+    // 1. Continuous Intergalactic Magnetic Field Wave Lines (Teal)
+    g.strokeStyle = "rgba(15, 126, 155, " + Math.max(0.04, 0.04 + (S1.B / 100) * 0.22) + ")";
+    g.lineWidth = 1.3;
+    for (let y = 35; y < H; y += 38) {
       g.beginPath();
-      g.arc(s.x, s.y, s.r, s.a, s.a + 4.2);
+      for (let x = 160; x <= earthX - 40; x += 15) {
+        const dy = Math.sin((x * 0.02) + (y * 0.03)) * (S1.B * 0.35);
+        if (x === 160) g.moveTo(x, y + dy);
+        else g.lineTo(x, y + dy);
+      }
       g.stroke();
     }
-    g.globalAlpha = 1;
 
-    // Dust Torus around AGN
-    const gr = g.createRadialGradient(200, H / 2, 8, 200, H / 2, 115);
-    gr.addColorStop(0, "rgba(214, 123, 25, 0.4)");
-    gr.addColorStop(0.7, "rgba(214, 123, 25, 0.15)");
-    gr.addColorStop(1, "rgba(0,0,0,0)");
-    g.globalAlpha = Math.min(0.65, 0.08 + (S1.tau / 4) * 0.55);
-    g.fillStyle = gr;
+    // 2. Relativistic Jet Beam Glow (Amber)
+    const jetGlow = g.createRadialGradient(agnX, agnY, 4, agnX, agnY, 75);
+    jetGlow.addColorStop(0, "rgba(214, 123, 25, 0.35)");
+    jetGlow.addColorStop(0.5, "rgba(214, 123, 25, 0.12)");
+    jetGlow.addColorStop(1, "transparent");
+    g.fillStyle = jetGlow;
     g.beginPath();
-    g.ellipse(200, H / 2, 95, 125, 0, 0, Math.PI * 2);
+    g.arc(agnX, agnY, 75, 0, Math.PI * 2);
     g.fill();
-    g.globalAlpha = 1;
 
-    g.fillStyle = C.muted;
-    g.font = "600 12px " + FB;
-    g.textAlign = "center";
-    g.fillText("Turbulent magnetic fields (scrambles protons)", 505, 22);
-    g.fillText("Dense dust torus (NGC 1068)", 200, 22);
-
-    // Earth & IceCube Target at Right
-    g.strokeStyle = C.tealDeep;
-    g.lineWidth = 4;
+    // Collimated Relativistic Jet Beam along line of sight
+    g.fillStyle = "rgba(214, 123, 25, 0.10)";
     g.beginPath();
-    g.moveTo(S1.DX, 0);
-    g.lineTo(S1.DX, H);
-    g.stroke();
+    g.moveTo(agnX, agnY - 4);
+    g.lineTo(agnX + 160, agnY - 28);
+    g.lineTo(agnX + 160, agnY + 28);
+    g.lineTo(agnX, agnY + 4);
+    g.closePath();
+    g.fill();
 
+    // 3. Dense Dust Torus (NGC 1068 style, tilted ellipse around AGN)
+    const torusX = agnX + 40, torusY = agnY;
     g.save();
-    g.translate(S1.DX + 20, H / 2);
-    g.rotate(-Math.PI / 2);
-    g.fillStyle = C.tealDeep;
-    g.font = "700 13px " + FD;
-    g.textAlign = "center";
-    g.fillText("Earth & IceCube Target", 0, 0);
+    g.strokeStyle = "rgba(180, 125, 60, " + Math.min(0.85, 0.35 + (S1.tau / 4) * 0.50) + ")";
+    g.fillStyle = "rgba(220, 180, 130, " + Math.min(0.55, 0.12 + (S1.tau / 4) * 0.40) + ")";
+    g.lineWidth = 16;
+    g.beginPath();
+    g.ellipse(torusX, torusY, 48, 105, Math.PI / 8, 0, Math.PI * 2);
+    g.stroke();
+    g.fill();
     g.restore();
 
-    // Cosmic Accelerator Core (AGN / Blazar)
-    const sg = g.createRadialGradient(S1.SX, H / 2, 2, S1.SX, H / 2, 40);
-    sg.addColorStop(0, C.amber);
-    sg.addColorStop(0.5, "rgba(214, 123, 25, 0.2)");
-    sg.addColorStop(1, "rgba(0,0,0,0)");
-    g.fillStyle = sg;
-    g.beginPath();
-    g.arc(S1.SX, H / 2, 40, 0, Math.PI * 2);
-    g.fill();
+    // Dust Torus label
+    g.fillStyle = "#945812";
+    g.font = "700 12px " + FD;
+    g.textAlign = "center";
+    g.fillText("Dense Dust Torus (NGC 1068)", torusX + 15, agnY - 92);
+    g.font = "500 11px " + FB;
+    g.fillStyle = C.muted;
+    g.fillText("Traps γ-rays · Transparent to ν", torusX + 15, agnY - 76);
+
+    // 4. Cosmic Accelerator Core (Accretion disk + Black hole event horizon)
     g.fillStyle = C.amber;
     g.beginPath();
-    g.arc(S1.SX, H / 2, 9, 0, Math.PI * 2);
+    g.arc(agnX, agnY, 12, 0, Math.PI * 2);
     g.fill();
 
     g.fillStyle = C.ink;
-    g.font = "700 13px " + FD;
-    g.textAlign = "center";
-    g.fillText("Blazar / AGN", S1.SX, H / 2 + 56);
+    g.beginPath();
+    g.arc(agnX, agnY, 5, 0, Math.PI * 2);
+    g.fill();
 
-    // Particle trajectories
+    g.fillStyle = C.ink;
+    g.font = "700 12px " + FD;
+    g.textAlign = "center";
+    g.fillText("Cosmic Accelerator", agnX, agnY + 44);
+    g.font = "500 11px " + FB;
+    g.fillStyle = C.muted;
+    g.fillText("(Blazar / AGN)", agnX, agnY + 58);
+
+    // 5. Earth & IceCube Target at the far right
+    g.fillStyle = C.teal;
+    g.beginPath();
+    g.arc(earthX, earthY, 36, 0, Math.PI * 2);
+    g.fill();
+
+    // Polar ice cap highlight
+    g.fillStyle = "#eaf5f9";
+    g.beginPath();
+    g.arc(earthX, earthY + 20, 16, 0, Math.PI * 2);
+    g.fill();
+
+    // IceCube detector marker
+    g.fillStyle = C.amber;
+    g.beginPath();
+    g.arc(earthX, earthY + 22, 4, 0, Math.PI * 2);
+    g.fill();
+
+    g.fillStyle = C.ink;
+    g.font = "700 12px " + FD;
+    g.textAlign = "center";
+    g.fillText("Earth & IceCube", earthX, earthY + 54);
+
+    // 6. Header sub-annotations
+    g.fillStyle = C.muted;
+    g.font = "600 12px " + FB;
+    g.textAlign = "center";
+    g.fillText("Turbulent magnetic fields B (deflects & scrambles protons)", 480, 22);
+
+    // 7. Particle Trajectories & Trails
     for (const p of S1.parts) {
       const cl = col1(p.t);
       g.strokeStyle = cl;
       g.lineWidth = p.t === "n" ? 2.8 : 1.8;
-      g.globalAlpha = 0.6;
+      g.globalAlpha = 0.65;
       g.beginPath();
       p.tr.forEach((q, i) => (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])));
       g.stroke();
@@ -255,38 +308,51 @@
       g.fill();
     }
 
-    // Absorption flashes
+    // 8. Flashes: Absorption bursts in dust vs Detector hits on Earth
     for (const f of S1.flash) {
       g.globalAlpha = Math.max(0, f.l);
       if (f.c === "ab") {
+        // Orange burst in dust torus
         g.strokeStyle = C.amber;
-        g.lineWidth = 2;
+        g.lineWidth = 2.5;
         g.beginPath();
-        g.arc(f.x, f.y, 6 + (0.6 - f.l) * 30, 0, Math.PI * 2);
+        g.arc(f.x, f.y, 6 + (0.65 - f.l) * 26, 0, Math.PI * 2);
         g.stroke();
+
+        g.fillStyle = "rgba(214, 123, 25, 0.4)";
+        g.beginPath();
+        g.arc(f.x, f.y, 8, 0, Math.PI * 2);
+        g.fill();
       } else {
+        // Hit on Earth detector
         g.fillStyle = col1(f.c);
         g.beginPath();
-        g.arc(f.x, f.y, 5 + (0.7 - f.l) * 8, 0, Math.PI * 2);
+        g.arc(f.x, f.y, 5 + (0.7 - f.l) * 9, 0, Math.PI * 2);
         g.fill();
       }
       g.globalAlpha = 1;
     }
 
-    // On-canvas Legend
+    // 9. On-canvas Legend Card
+    g.fillStyle = "rgba(255, 255, 255, 0.92)";
+    g.strokeStyle = C.line;
+    g.lineWidth = 1;
+    g.fillRect(180, H - 76, 420, 64);
+    g.strokeRect(180, H - 76, 420, 64);
+
     g.textAlign = "left";
-    g.font = "600 12px " + FB;
+    g.font = "600 11.5px " + FB;
     [
-      ["cr", "Cosmic ray (p, q = +1): Bends in B-field"],
-      ["g", "Gamma ray (γ, q = 0): Absorbed in dust torus"],
-      ["n", "Neutrino (ν, q = 0): Straight laser line to Earth"]
+      ["cr", "Cosmic ray (p, q = +1): Bends in B-field (arrival direction scrambled)"],
+      ["g", "Gamma ray (γ, q = 0): Straight line, absorbed by dense dust torus"],
+      ["n", "Neutrino (ν, q = 0): Laser-straight line directly pointing to source"]
     ].forEach((a, i) => {
       g.fillStyle = col1(a[0]);
       g.beginPath();
-      g.arc(260, H - 65 + i * 20, 5, 0, Math.PI * 2);
+      g.arc(195, H - 60 + i * 18, 4.5, 0, Math.PI * 2);
       g.fill();
       g.fillStyle = C.ink;
-      g.fillText(a[1], 274, H - 61 + i * 20);
+      g.fillText(a[1], 208, H - 56 + i * 18);
     });
 
     drawHist1();
@@ -391,92 +457,113 @@
     time: 0
   };
 
-  const gDIS = ctx("#cDIS", 900, 440);
+  const gDIS = ctx("#cDIS", 900, 380);
+
+  function updateInelasticityHUD() {
+    const yValDisplay = $("#yValDisplay");
+    const yPercentHad = $("#yPercentHad");
+    const yPercentLep = $("#yPercentLep");
+    const splitHadBar = $("#splitHadBar");
+    const splitLepBar = $("#splitLepBar");
+    const hadPct = Math.round(S2.y * 100);
+    const lepPct = 100 - hadPct;
+    if (yValDisplay) yValDisplay.textContent = S2.y.toFixed(2);
+    if (yPercentHad) yPercentHad.textContent = hadPct + "%";
+    if (yPercentLep) yPercentLep.textContent = lepPct + "%";
+    if (splitHadBar) {
+      splitHadBar.style.width = hadPct + "%";
+      splitHadBar.textContent = "Hadron Cascade: " + hadPct + "%";
+    }
+    if (splitLepBar) {
+      splitLepBar.style.width = lepPct + "%";
+      splitLepBar.textContent = "Outgoing Lepton: " + lepPct + "%";
+    }
+  }
 
   function drawDIS() {
     if (!gDIS) return;
-    const g = gDIS, W = 900, H = 440;
+    const g = gDIS, W = 900, H = 380;
     g.clearRect(0, 0, W, H);
     g.fillStyle = C.surface;
     g.fillRect(0, 0, W, H);
 
-    const midY = H / 2 + 10;
-    const vTopX = W * 0.40, vTopY = midY - 70;
-    const vBotX = W * 0.40, vBotY = midY + 45;
+    const vTopX = 350, vTopY = 125;
+    const vBotX = 350, vBotY = 240;
 
     // Header equation
-    g.font = "700 14px " + FD;
+    g.font = "700 13.5px " + FD;
     g.fillStyle = C.tealDeep;
     let eq = "";
-    if (S2.mode === "mu_cc") eq = "Muon Neutrino Charged Current: ν_μ + N → μ⁻ + Hadronic Shower X (W⁺ Boson)";
-    else if (S2.mode === "e_cc") eq = "Electron Neutrino Charged Current: ν_e + N → e⁻ + Hadronic Shower X (W⁺ Boson)";
-    else if (S2.mode === "tau_cc") eq = "Tau Neutrino Charged Current: ν_τ + N → τ⁻ + Hadronic Shower X (Double Bang)";
-    else eq = "Neutral Current (All Flavors): ν + N → ν + Hadronic Shower X (Z⁰ Boson)";
+    if (S2.mode === "mu_cc") eq = "Muon Neutrino Charged Current: ν_μ + N → μ⁻ + Hadronic Shower X (W⁺ Boson Exchange)";
+    else if (S2.mode === "e_cc") eq = "Electron Neutrino Charged Current: ν_e + N → e⁻ + Hadronic Shower X (W⁺ Boson Exchange)";
+    else if (S2.mode === "tau_cc") eq = "Tau Neutrino Charged Current: ν_τ + N → τ⁻ + Hadronic Shower X (Double Bang Signature)";
+    else eq = "Neutral Current (All Flavors): ν + N → ν + Hadronic Shower X (Z⁰ Boson Exchange)";
     g.fillText(eq, 25, 26);
 
     // 1. Incoming Neutrino (Amber line)
     g.strokeStyle = C.amber;
     g.lineWidth = 3;
     g.beginPath();
-    g.moveTo(40, midY - 145);
+    g.moveTo(45, 90);
     g.lineTo(vTopX, vTopY);
     g.stroke();
 
     g.fillStyle = C.amber;
-    g.font = "700 13px " + FD;
+    g.font = "700 12.5px " + FD;
     let inLabel = S2.mode === "mu_cc" ? "Incoming ν_μ" : S2.mode === "e_cc" ? "Incoming ν_e" : S2.mode === "tau_cc" ? "Incoming ν_τ" : "Incoming ν_l";
-    g.fillText(inLabel, 40, midY - 156);
+    g.fillText(inLabel, 45, 78);
 
     // 2. Target Nucleon (Proton / Neutron in Oxygen/Hydrogen ice nucleus)
-    const nucX = 80, nucY = midY + 130;
-    g.fillStyle = C.tealLight;
+    const nucCenterX = 120, nucCenterY = 275, nucR = 44;
+    g.fillStyle = C.chip;
     g.strokeStyle = C.teal;
     g.lineWidth = 1.6;
     g.beginPath();
-    g.arc(nucX + 45, nucY, 52, 0, Math.PI * 2);
+    g.arc(nucCenterX, nucCenterY, nucR, 0, Math.PI * 2);
     g.fill();
     g.stroke();
 
     g.fillStyle = C.ink;
     g.font = "700 12px " + FD;
-    g.fillText("Target Nucleon N in Ice", nucX + 5, nucY + 68);
+    g.fillText("Target Nucleon N in Ice", nucCenterX - 48, nucCenterY + 62);
 
     // 3 Valence Quarks
-    const q1Y = nucY - 22; // Struck quark q
-    const q2Y = nucY;     // Spectator 1
-    const q3Y = nucY + 22; // Spectator 2
+    const q1Y = nucCenterY - 20; // Struck quark q
+    const q2Y = nucCenterY;     // Spectator 1
+    const q3Y = nucCenterY + 20; // Spectator 2
 
     // Struck quark line to bottom vertex
     g.strokeStyle = C.tealDeep;
     g.lineWidth = 2.8;
     g.beginPath();
-    g.moveTo(nucX + 45, q1Y);
+    g.moveTo(nucCenterX, q1Y);
     g.lineTo(vBotX, vBotY);
     g.stroke();
 
     g.fillStyle = C.tealDeep;
     g.font = "600 11.5px " + FB;
-    g.fillText("Struck Quark q (u or d)", nucX + 90, q1Y - 8);
+    g.fillText("Struck Quark q (u or d)", nucCenterX + 45, q1Y - 8);
 
     // 2 Spectator Quarks
     g.strokeStyle = C.muted;
-    g.lineWidth = 2;
+    g.lineWidth = 1.8;
     g.beginPath();
-    g.moveTo(nucX + 45, q2Y);
-    g.lineTo(W * 0.72, q2Y + 35);
-    g.moveTo(nucX + 45, q3Y);
-    g.lineTo(W * 0.72, q3Y + 55);
+    g.moveTo(nucCenterX, q2Y);
+    g.lineTo(600, 305);
+    g.moveTo(nucCenterX, q3Y);
+    g.lineTo(600, 328);
     g.stroke();
 
     g.fillStyle = C.muted;
-    g.fillText("2 Spectator Quarks (unaffected)", W * 0.46, q3Y + 65);
+    g.font = "500 11px " + FB;
+    g.fillText("2 Spectator Quarks (unaffected)", 420, 346);
 
     // 3. Virtual Boson Propagator (Wavy line between vertices)
     const isW = S2.mode !== "nc";
     g.strokeStyle = isW ? C.amber : C.teal;
     g.lineWidth = 2.6;
     g.beginPath();
-    const waves = 22;
+    const waves = 20;
     for (let s = 0; s <= waves; s++) {
       const u = s / waves;
       const wx = vTopX + Math.sin(u * Math.PI * 6) * 10;
@@ -487,12 +574,11 @@
     g.stroke();
 
     g.fillStyle = isW ? C.amberText : C.tealDeep;
-    g.font = "700 12.5px " + FD;
-    g.fillText(isW ? "W⁺ Boson (80.4 GeV)" : "Z⁰ Boson (91.2 GeV)", vTopX + 16, midY - 12);
+    g.font = "700 12px " + FD;
+    g.fillText(isW ? "W⁺ Boson (80.4 GeV)" : "Z⁰ Boson (91.2 GeV)", vTopX + 16, (vTopY + vBotY) / 2 + 4);
 
     // 4. Outgoing Lepton at Top Right
-    const lepEndX = W * 0.88;
-    const lepEndY = midY - 145;
+    const lepEndX = 780, lepEndY = 80;
 
     if (S2.mode === "mu_cc") {
       // Outgoing Muon Track
@@ -508,15 +594,15 @@
       g.fillText("Outgoing Muon μ⁻", lepEndX - 100, lepEndY - 14);
       g.font = "500 11.5px " + FB;
       g.fillStyle = C.muted;
-      g.fillText("Carries " + ((1 - S2.y) * 100).toFixed(0) + "% energy → Kilometers-long Cherenkov Track", lepEndX - 230, lepEndY + 6);
+      g.fillText("Carries " + ((1 - S2.y) * 100).toFixed(0) + "% energy → Kilometers-long Cherenkov Track", lepEndX - 240, lepEndY + 6);
     } else if (S2.mode === "e_cc") {
       // Outgoing Electron Cascade
-      const eGlow = g.createRadialGradient(vTopX + 50, vTopY - 25, 4, vTopX + 50, vTopY - 25, 42);
+      const eGlow = g.createRadialGradient(vTopX + 50, vTopY - 25, 4, vTopX + 50, vTopY - 25, 40);
       eGlow.addColorStop(0, "rgba(214, 123, 25, 0.45)");
       eGlow.addColorStop(1, "rgba(0,0,0,0)");
       g.fillStyle = eGlow;
       g.beginPath();
-      g.arc(vTopX + 50, vTopY - 25, 42, 0, Math.PI * 2);
+      g.arc(vTopX + 50, vTopY - 25, 40, 0, Math.PI * 2);
       g.fill();
 
       g.strokeStyle = C.amber;
@@ -525,10 +611,10 @@
 
       g.fillStyle = C.amberText;
       g.font = "700 13px " + FD;
-      g.fillText("Outgoing Electron e⁻ Cascade", vTopX + 105, vTopY - 32);
+      g.fillText("Outgoing Electron e⁻ Cascade", vTopX + 105, vTopY - 30);
       g.font = "500 11.5px " + FB;
       g.fillStyle = C.muted;
-      g.fillText("Bremsstrahlung shower (<10m) overlaps with hadronic cascade", vTopX + 105, vTopY - 14);
+      g.fillText("Bremsstrahlung shower (<10m) overlaps with hadronic shower", vTopX + 105, vTopY - 14);
     } else if (S2.mode === "tau_cc") {
       // Outgoing Tau Double Bang
       g.strokeStyle = C.teal;
@@ -538,21 +624,20 @@
       g.lineTo(vTopX + 85, vTopY - 45);
       g.stroke();
 
-      // Second Bang
-      const tauGlow = g.createRadialGradient(vTopX + 85, vTopY - 45, 4, vTopX + 85, vTopY - 45, 30);
+      const tauGlow = g.createRadialGradient(vTopX + 85, vTopY - 45, 4, vTopX + 85, vTopY - 45, 28);
       tauGlow.addColorStop(0, "rgba(15, 126, 155, 0.45)");
       tauGlow.addColorStop(1, "rgba(0,0,0,0)");
       g.fillStyle = tauGlow;
       g.beginPath();
-      g.arc(vTopX + 85, vTopY - 45, 30, 0, Math.PI * 2);
+      g.arc(vTopX + 85, vTopY - 45, 28, 0, Math.PI * 2);
       g.fill();
 
       g.fillStyle = C.tealDeep;
       g.font = "700 13px " + FD;
-      g.fillText("Tau τ⁻ Decay (2nd Cascade)", vTopX + 125, vTopY - 50);
+      g.fillText("Tau τ⁻ Decay (2nd Cascade)", vTopX + 125, vTopY - 48);
       g.font = "500 11.5px " + FB;
       g.fillStyle = C.muted;
-      g.fillText("Double Bang signature: ~50m flight path per PeV", vTopX + 125, vTopY - 34);
+      g.fillText("Double Bang signature: ~50m flight path per PeV", vTopX + 125, vTopY - 32);
     } else {
       // Neutral Current (Invisible Neutrino)
       g.setLineDash([7, 6]);
@@ -569,12 +654,12 @@
       g.fillText("Outgoing Neutrino ν_l (Invisible)", lepEndX - 180, lepEndY - 14);
       g.font = "500 11.5px " + FB;
       g.fillStyle = C.muted;
-      g.fillText("No electric charge: leaves zero Cherenkov light!", lepEndX - 220, lepEndY + 6);
+      g.fillText("Zero electric charge: escapes undetected without light", lepEndX - 240, lepEndY + 6);
     }
 
     // 5. Hadronic Cascade X at Bottom Right
-    const hadX = W * 0.70, hadY = vBotY + 16;
-    const hadR = 36 + S2.y * 38;
+    const hadX = 640, hadY = vBotY + 12;
+    const hadR = 34 + S2.y * 36;
 
     const hadGlow = g.createRadialGradient(hadX, hadY, 4, hadX, hadY, hadR);
     hadGlow.addColorStop(0, "rgba(15, 126, 155, 0.45)");
@@ -591,50 +676,17 @@
     for (let k = -4; k <= 4; k++) {
       g.beginPath();
       g.moveTo(vBotX, vBotY);
-      g.lineTo(hadX + 30 + Math.cos(k * 0.25) * 32, hadY + Math.sin(k * 0.25) * 32);
+      g.lineTo(hadX + 28 + Math.cos(k * 0.25) * 30, hadY + Math.sin(k * 0.25) * 30);
       g.stroke();
     }
 
     g.fillStyle = C.tealDeep;
     g.font = "700 13px " + FD;
-    g.fillText("Hadronic Cascade X", hadX + 48, hadY - 6);
+    g.fillText("Hadronic Cascade X", hadX + 46, hadY - 8);
     g.font = "500 11.5px " + FB;
     g.fillStyle = C.muted;
-    g.fillText("Carries y = " + (S2.y * 100).toFixed(0) + "% energy", hadX + 48, hadY + 12);
-    g.fillText("Fragmented quarks → π±, π⁰, p, n (<10m)", hadX + 48, hadY + 28);
-
-    // Energy Split Readout Pill Box
-    g.fillStyle = C.surfaceAlt;
-    g.strokeStyle = C.line;
-    g.fillRect(25, H - 72, W - 50, 52);
-    g.strokeRect(25, H - 72, W - 50, 52);
-
-    g.fillStyle = C.ink;
-    g.font = "600 12px " + FB;
-    g.fillText("Inelasticity Fraction y = E_had / E_tot: " + S2.y.toFixed(2), 40, H - 42);
-
-    // Energy split progress bar
-    const barX = 340, barW = W - 390, barY = H - 52, barH = 14;
-    g.fillStyle = C.line;
-    g.fillRect(barX, barY, barW, barH);
-
-    // Hadron energy portion (Teal)
-    const hadW = barW * S2.y;
-    g.fillStyle = C.teal;
-    g.fillRect(barX, barY, hadW, barH);
-
-    // Lepton portion (Amber)
-    g.fillStyle = C.amber;
-    g.fillRect(barX + hadW, barY, barW - hadW, barH);
-
-    g.font = "600 11px " + FB;
-    g.fillStyle = C.tealDeep;
-    g.fillText("Hadron Cascade: " + (S2.y * 100).toFixed(0) + "%", barX, barY - 4);
-
-    g.fillStyle = C.amberText;
-    g.textAlign = "right";
-    g.fillText("Outgoing Lepton: " + ((1 - S2.y) * 100).toFixed(0) + "%", barX + barW, barY - 4);
-    g.textAlign = "left";
+    g.fillText("Carries y = " + (S2.y * 100).toFixed(0) + "% energy", hadX + 46, hadY + 10);
+    g.fillText("Fragmented quarks → π±, π⁰, p, n (<10m)", hadX + 46, hadY + 26);
   }
 
   // Setup Slide 2 Buttons
@@ -651,7 +703,9 @@
     S2.y = v;
     drawDIS();
     readDIS();
+    updateInelasticityHUD();
   });
+  updateInelasticityHUD();
 
   function readDIS() {
     const dl = $("#rDIS");
@@ -1002,23 +1056,7 @@
     row(dl, it);
   }
 
-  // Toggle between Figure 3 and Live Simulation
-  $$("#viewToggleGroup button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      $$("#viewToggleGroup button").forEach((b) => b.setAttribute("aria-pressed", b === btn ? "true" : "false"));
-      const view = btn.dataset.view;
-      S3_Det.view = view;
-      if (view === "figure3") {
-        $("#fig3Container").hidden = false;
-        $("#liveDetectorContainer").hidden = true;
-      } else {
-        $("#fig3Container").hidden = true;
-        $("#liveDetectorContainer").hidden = false;
-        build2();
-      }
-    });
-  });
-
+  // Cherenkov Event Generator Controls
   $$("#fl button").forEach((b) => {
     b.addEventListener("click", () => {
       $$("#fl button").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
@@ -1485,7 +1523,7 @@
 
   function showSlide(idx) {
     activeSlide = idx;
-    for (let k = 0; k < 5; k++) {
+    for (let k = 0; k < 6; k++) {
       const tab = $("#t" + k);
       const panel = $("#p" + k);
       if (tab) tab.setAttribute("aria-selected", k === idx ? "true" : "false");
@@ -1494,17 +1532,18 @@
     if (idx === 1) {
       drawDIS();
       readDIS();
-    } else if (idx === 2) {
-      if (S3_Det.view === "live") build2();
+      updateInelasticityHUD();
     } else if (idx === 3) {
-      draw4_Scale();
+      build2();
     } else if (idx === 4) {
+      draw4_Scale();
+    } else if (idx === 5) {
       draw5_Sig();
       update5();
     }
   }
 
-  for (let k = 0; k < 5; k++) {
+  for (let k = 0; k < 6; k++) {
     const tab = $("#t" + k);
     if (tab) tab.addEventListener("click", () => showSlide(k));
   }
@@ -1513,7 +1552,7 @@
   if (tabsNav) {
     tabsNav.addEventListener("keydown", (e) => {
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-        const next = (activeSlide + (e.key === "ArrowRight" ? 1 : 4)) % 5;
+        const next = (activeSlide + (e.key === "ArrowRight" ? 1 : 5)) % 6;
         showSlide(next);
         const nextTab = $("#t" + next);
         if (nextTab) nextTab.focus();
@@ -1546,13 +1585,13 @@
     } else if (activeSlide === 1) {
       // Feynman canvas is static/interactive
     } else if (activeSlide === 2) {
-      if (S3_Det.view === "live") {
-        upd2(dt);
-        draw2();
-      }
+      // Observatory Architecture (schematic image & specs)
     } else if (activeSlide === 3) {
-      // Scale canvas
+      upd2(dt);
+      draw2();
     } else if (activeSlide === 4) {
+      // Scale canvas
+    } else if (activeSlide === 5) {
       // Significance canvas
     }
 
