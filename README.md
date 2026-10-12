@@ -1,4 +1,4 @@
-# The Thinking Experiment: IceCube Neutrino Observatory Interactive Simulation
+# Ghost Particle Lab: Interactive Seminar Presentation
 ### Commemorating the 2026 Nobel Prize in Physics (Francis Halzen)
 *Authored for Vladimir Lopez · The Thinking Experiment · October 2026*
 
@@ -6,61 +6,51 @@
 
 ## 🌌 Overview
 
-This interactive simulation suite brings the physics of the **IceCube Neutrino Observatory** and cosmic messengers to life. Designed for high school and AP Physics students, STEM educators, and seminar audiences, it models how Francis Halzen turned a cubic kilometer of ancient South Pole ice into the world's most sensitive neutrino telescope.
+An interactive presentation suite designed for high school and AP Physics seminars and classrooms, breaking down Francis Halzen's **2026 Nobel Prize in Physics** for the **IceCube Neutrino Observatory**.
 
 - **Live URL:** [https://thinking-experiment-sims.github.io/icecube-neutrino-simulation/](https://thinking-experiment-sims.github.io/icecube-neutrino-simulation/)
 - **Design System:** Light Mode Only · Pure White (`#ffffff`) · Teal (`#0f7e9b`) · Amber (`#d67b19`)
 
 ---
 
-## 🔬 The 6 Interactive Laboratory Modules
+## 🔬 Presentation Slides
 
-### 1. 🏫 Setup & Orientation
-- Overview of the 2026 Nobel Prize in Physics awarded to Francis Halzen.
-- Clear explanation of why neutrinos are unique cosmic messengers (uncharged, rarely interacting).
-- High-level roadmap cards linking to all interactive modules with teacher demo prompts.
+### 1 · Messengers (Who Keeps the Return Address?)
+- **Cosmic Engine:** Real-time simulation of an active galactic nucleus (AGN/blazar) accelerating cosmic ray protons, producing neutral pions ($\pi^0 \to 2\gamma$) and charged pions ($\pi^+ \to \mu^+ \nu_\mu$).
+- **Deflection & Absorption:** Charged protons bend and scatter in turbulent interstellar magnetic fields ($B$), and gamma rays are absorbed by the dense dust torus (NGC 1068).
+- **Angular Histograms:** Demonstrates why uncharged neutrinos point directly back to the true celestial coordinates within $\pm 0.0^\circ$.
 
-### 2. 🧊 IceCube 3D Detector (Digital Twin)
-- **Geometry:** 86 vertical strings on a $125\text{ m}$ hexagonal grid, 5,160 Digital Optical Modules (DOMs), sensor depth from $1,450\text{ m}$ to $2,450\text{ m}$, and the central dense DeepCore subarray.
-- **Nanosecond Time Scrubber:** Displays the arrival of Cherenkov light cones in real-time ($0\text{--}3,000\text{ ns}$).
-- **Chromatic Rainbow Timing:** Maps arrival times to the standard IceCube color palette (**Red = Earliest**, Yellow, Green, Cyan, **Blue = Latest**).
-- **Charge Proportional Sizing:** Spheres scale dynamically with detected photoelectrons.
-- **Historic Presets:** One-click recreation of 2017 TXS 0506+056 (blazar muon track), 2013 Bert (PeV cascade), 2022 NGC 1068, 2023 Milky Way plane, and atmospheric background events.
-- **Camera Presets:** 3D Perspective, Top-Down Celestial Sky Map, Side Depth Elevation, and DeepCore close-up.
+### 2 · Collisions & Hadronic Cascades (Deep Inelastic Scattering)
+- **Split Collision Channels:** Interactive Feynman diagram clearly separating:
+  1. $\nu_\mu$ Charged Current ($W^\pm$): Kilometers-long muon track + vertex hadronic cascade.
+  2. $\nu_e$ Charged Current ($W^\pm$): Overlapping electromagnetic cascade + hadronic shower.
+  3. $\nu_\tau$ Charged Current ($W^\pm$): "Double Bang" signature with $50\text{ m/PeV}$ tau flight.
+  4. Neutral Current ($Z^0$): Outgoing neutral neutrino is invisible; only the hadronic cascade is detected.
+- **Hadronic Cascade Breakdown:** Explains quark knockout, color flux tube snapping (QCD confinement), vacuum pair creation, hadronization into pions, and Cherenkov emission.
+- **Inelasticity Slider:** Real-time adjustment of $y = E_{\text{had}} / E_{\nu}$.
 
-### 3. 🔭 Cosmic Sources & Deflection Engine
-- **Lorentz Force Deflection:** Shows charged cosmic-ray protons bending erratically in turbulent interstellar magnetic fields ($B \sim 0.1\text{--}10\text{ nG}$).
-- **Straight Neutrino Geodesics:** Demonstrates why uncharged neutrinos point directly back to their cosmic accelerator.
-- **NGC 1068 Dust Torus:** Shows high-energy gamma rays being absorbed while neutrinos pass through unaffected.
+### 3 · Ice Detector (Figure 3 & Cherenkov Light)
+- **Official Nobel Schematic:** High-resolution reproduction of **Figure 3** from the Nobel Committee's Scientific Background report (*Figure credit: IceCube Collaboration*).
+- **Live Cherenkov Simulation:** Interactive side-view of strings and sensors in deep ice showing the Cherenkov shockwave cone ($\cos \theta_c = \frac{1}{\beta n} \approx 41^\circ$) and nanosecond rainbow timing.
 
-### 4. 🌊 Cherenkov Optics ("Sonic Boom for Light")
-- **Wave Tank Simulator:** Generates expanding spherical electromagnetic wavelets at phase speed $c/n$.
-- **Mach Shock Front:** Visualizes the onset of Cherenkov radiation when $\beta > 1/n$, calculating the exact emission angle:
-  $$\cos \theta_c = \frac{1}{\beta n} \implies \theta_c \approx 41^\circ \text{ in ice}$$
-- Interactive velocity and medium refractive index controls ($n = 1.31$ for Antarctic ice, $1.00$ vacuum, $1.33$ water, $1.50$ glass).
+### 4 · Why a Cubic Kilometer (Scale & Earth Absorption)
+- **Logarithmic Scale Ruler:** Compares benchtop detectors ($1\text{ m}$) to IceCube ($1\text{ km}^3$) and IceCube-Gen2 ($\sim 8\text{ km}^3$).
+- **Earth Transmission Plot:** Calculates neutrino survival through the Earth's mantle and core as a function of energy.
 
-### 5. ⚡ Subatomic Collision (Deep Inelastic Scattering)
-- **Quark-Level Feynman Canvas:** Interactive electroweak boson exchange.
-- **Charged Current ($W^\pm$):** Produces outgoing charged leptons (muon track $\Delta\theta < 0.5^\circ$, electron cascade, or PeV tau double-bang).
-- **Neutral Current ($Z^0$):** Uncharged neutrino flies on unseen, leaving only the hadronic shower $X$.
-- **Inelasticity Slider ($y = E_{\text{had}} / E_{\nu}$):** Adjusts the energy split between the hadronic shower and the outgoing lepton.
-
-### 6. 📊 5-Sigma Discovery Challenge (Background Rejection & Statistics)
-- **Needle in a Haystack:** Compares $2,700\text{ Hz}$ surface atmospheric muons ($85\text{ billion/yr}$) and $100,000\text{/yr}$ atmospheric neutrinos against only $\sim 100\text{/yr}$ cosmic signal.
-- **Active Filters:** Toggle Earth rock overburden (upgoing filter) and HESE outer DOM veto.
-- **Poisson Significance Calculator:** Interactive $Z$-score and $p$-value solver comparing $4.2\sigma$ ("evidence") with $5.7\sigma$ ("discovery").
+### 5 · How Sure is Sure (5-Sigma Discovery Challenge)
+- **Gaussian Discovery Bell Curves:** Background vs. Signal distributions with $3\sigma$ (Evidence) and $5\sigma$ (Discovery) thresholds.
+- **Systematic Error Modeler:** Demonstrates how background modeling errors degrade significance.
+- **Historical Results Table:** Real Nobel paper results from 2014, 2022, 2023, and 2026.
 
 ---
 
-## 🚀 How to Run Locally
-
-Because dependencies (`three.min.js`, `OrbitControls.js`) are bundled locally and KaTeX loads asynchronously from CDN with graceful unicode fallbacks:
+## 🚀 Local Run
 
 ```bash
 cd ~/AI_Ecosystem/icecube-neutrino-simulation
 python3 -m http.server 8080
 ```
-Then navigate to `http://localhost:8080` in your web browser.
+Then open `http://localhost:8080` in any web browser.
 
 ---
 

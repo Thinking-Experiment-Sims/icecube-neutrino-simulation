@@ -2,12 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IceCube Neutrino Observatory | The Thinking Experiment</title>
-  <meta name="description" content="Interactive Physics Simulation Suite for the 2026 Nobel Prize in Physics awarded to Francis Halzen. Cherenkov radiation, cosmic accelerators, and IceCube digital twin.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>Ghost Particle Lab | The Thinking Experiment</title>
+  <meta name="description" content="Interactive seminar presentation behind the 2026 Nobel Prize in Physics awarded to Francis Halzen for the IceCube Neutrino Observatory.">
   <link rel="icon" type="image/png" href="https://vladimirlopez.github.io/the-thinking-experiment/assets/favicon-32.png">
   
-  <!-- KaTeX for beautiful math rendering without raw LaTeX artifacts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+  <!-- KaTeX for math rendering without raw LaTeX artifacts -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
@@ -15,544 +19,275 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Blueprint background grid matching Hub -->
-  <div class="bg-grid" aria-hidden="true"></div>
 
-  <div class="shell">
-    <!-- ===== HERO BANNER ===== -->
-    <header class="hero">
-      <div class="hero-top">
-        <div>
-          <div class="brand-row">
-            <a href="https://thinking-experiment-sims.github.io/interactive-physics/" class="brand-badge" title="Return to The Thinking Experiment Simulations Hub">
-              ← The Thinking Experiment
-            </a>
-            <span class="lab-badge">🧊 2026 Nobel Prize in Physics · Francis Halzen</span>
-          </div>
-          <h1>IceCube Neutrino Observatory: Cosmic Messengers &amp; Cherenkov Detector</h1>
-          <p class="hero-subtitle">
-            Explore how 5,160 optical sensors frozen in a cubic kilometer of Antarctic ice detect high-energy cosmic neutrinos from blazars and black holes using Cherenkov radiation.
-          </p>
-        </div>
-
-        <div class="hero-meta-badges no-print">
-          <div class="workflow-pill-group">
-            <button class="workflow-pill-btn active" id="btnModeStudent" title="Student exploration mode">
-              <span>🎓</span> Student Lab Mode
-            </button>
-            <button class="workflow-pill-btn" id="btnModeTeacher" title="Teacher demo mode with seminar notes">
-              <span>🧪</span> Teacher Demo Mode
-            </button>
-          </div>
-
-          <button class="btn-icon-head" id="btnAudioToggle" title="Toggle Accessible Sonification">
-            <span id="audioIcon">🔇</span> <span id="audioLabel">Audio: OFF</span>
-          </button>
-          <button class="btn-icon-head" id="btnFullscreen" title="Toggle Fullscreen">⛶</button>
-        </div>
+<div class="wrap">
+  <header>
+    <div class="header-top">
+      <span class="eyebrow">
+        <a href="https://thinking-experiment-sims.github.io/interactive-physics/">← The Thinking Experiment</a> · 2026 Nobel Prize in Physics
+      </span>
+      <div class="header-actions">
+        <button class="btn-ghost" id="btn-fullscreen" title="Toggle Fullscreen (F)">⛶ Fullscreen</button>
       </div>
-    </header>
+    </div>
+    <h1>Ghost Particle Lab</h1>
+    <p>Five interactive presentation modules behind Francis Halzen and the IceCube Neutrino Observatory. Change one parameter at a time and observe how the physics responds.</p>
+  </header>
 
-    <!-- ===== SCENARIO NAVIGATION TABS ===== -->
-    <nav class="scenario-nav no-print" aria-label="Laboratory Workflow Tabs">
-      <button class="scenario-tab active" data-tab="overview">
-        🏫 1. Setup &amp; Overview
-      </button>
-      <button class="scenario-tab" data-tab="detector">
-        🧊 2. IceCube 3D Detector
-      </button>
-      <button class="scenario-tab" data-tab="sources">
-        🔭 3. Cosmic Sources &amp; Deflection
-      </button>
-      <button class="scenario-tab" data-tab="cherenkov">
-        🌊 4. Cherenkov Optics
-      </button>
-      <button class="scenario-tab" data-tab="dis">
-        ⚡ 5. Subatomic Collision (Quark DIS)
-      </button>
-      <button class="scenario-tab" data-tab="sigmalab">
-        📊 6. 5-Sigma Discovery Lab
-      </button>
-    </nav>
+  <!-- Navigation Tabs Strip -->
+  <nav class="tabs" role="tablist" aria-label="Presentation Modules">
+    <button class="tab" role="tab" id="t0" aria-selected="true" aria-controls="p0">
+      <span>1 · Messengers</span>
+      <small>Who keeps the return address?</small>
+    </button>
+    <button class="tab" role="tab" id="t1" aria-selected="false" aria-controls="p1">
+      <span>2 · Collisions &amp; Cascades</span>
+      <small>Feynman diagrams &amp; quark showers</small>
+    </button>
+    <button class="tab" role="tab" id="t2" aria-selected="false" aria-controls="p2">
+      <span>3 · Ice Detector</span>
+      <small>Figure 3 schematic &amp; Cherenkov glow</small>
+    </button>
+    <button class="tab" role="tab" id="t3" aria-selected="false" aria-controls="p3">
+      <span>4 · Why a Cubic km</span>
+      <small>Rare cross-sections &amp; opaque Earth</small>
+    </button>
+    <button class="tab" role="tab" id="t4" aria-selected="false" aria-controls="p4">
+      <span>5 · How Sure is Sure</span>
+      <small>From 4.2σ to 5.7σ discovery</small>
+    </button>
+  </nav>
 
-    <!-- Active Scenario Description Banner -->
-    <section class="scenario-banner no-print" aria-label="Current Mode Overview">
-      <h2 class="scenario-banner-title" id="bannerTitle">1. Laboratory Orientation &amp; Nobel Prize Setup</h2>
-      <p class="scenario-banner-desc" id="bannerDesc">
-        Understand why Francis Halzen built a 1-billion-ton neutrino detector under the South Pole ice, how ghost particles reveal hidden black holes, and how to use each interactive simulation module.
-      </p>
-    </section>
-
-    <!-- =========================================================================
-         TAB 1: SETUP & PEDAGOGICAL OVERVIEW
-         ========================================================================= -->
-    <section id="panelOverview" class="tab-panel active">
-      <div class="overview-grid">
-        <!-- Card 1: Nobel Prize Discovery -->
-        <article class="overview-card">
-          <h3><span>🏆</span> The 2026 Nobel Prize in Physics</h3>
-          <p>
-            Awarded to <strong>Francis Halzen</strong> (University of Wisconsin–Madison) <em>"for decisive contributions to the IceCube Neutrino Observatory and the discovery of high-energy neutrinos of astrophysical origin."</em>
-          </p>
-          <div class="key-stats-row">
-            <div class="key-stat">
-              <span class="key-stat-num">1 km³</span>
-              <span class="key-stat-label">Instrumented Ice</span>
-            </div>
-            <div class="key-stat">
-              <span class="key-stat-num">5,160</span>
-              <span class="key-stat-label">Optical DOMs</span>
-            </div>
-            <div class="key-stat">
-              <span class="key-stat-num">2.5 km</span>
-              <span class="key-stat-label">Maximum Depth</span>
-            </div>
-          </div>
-          <p>
-            Halzen's vision was bold: instead of spending billions creating an artificial detector medium, use the pure, bubble-free natural ice sheets of the South Pole to trap cosmic particles.
-          </p>
-        </article>
-
-        <!-- Card 2: Why Neutrinos? -->
-        <article class="overview-card">
-          <h3><span>👻</span> Why Neutrinos? The Cosmic Messenger Mystery</h3>
-          <p>
-            For a century, astronomers could not determine where ultra-high-energy cosmic rays came from:
-          </p>
-          <ul style="padding-left: 1.2rem; font-size: 0.88rem; color: var(--ink); display: flex; flex-direction: column; gap: 0.35rem;">
-            <li><strong>Protons (Charged):</strong> Deflected by intergalactic and Milky Way magnetic fields; their arrival directions are completely scrambled.</li>
-            <li><strong>Photons / Gamma Rays:</strong> Absorbed by intergalactic background light and dense dust clouds surrounding supermassive black holes.</li>
-            <li><strong>Neutrinos (Neutral):</strong> Zero electric charge and almost zero mass. They travel billions of light-years in straight lines, pointing directly back to their cosmic engines!</li>
-          </ul>
-        </article>
+  <!-- ==================== SLIDE 1: MESSENGERS ==================== -->
+  <section class="panel" id="p0" role="tabpanel" aria-labelledby="t0">
+    <h2 class="lead">Three messengers leave the same cosmic accelerator. Only one keeps both its direction and its numbers.</h2>
+    <p class="from">Deck slides: Cosmic rays hide their origin · From cosmic rays to neutrinos (p + &gamma; &rarr; &Delta;⁺ &rarr; &pi;⁺/&pi;⁰).</p>
+    <div class="grid">
+      <div class="stage">
+        <canvas id="c1" width="900" height="380" aria-label="Particles leave an active galactic nucleus. Protons bend in magnetic fields, gamma rays are absorbed by dust, and neutrinos fly straight to Earth."></canvas>
+        <canvas id="h1" width="900" height="170" aria-label="Histograms of arrival direction for cosmic rays, gamma rays, and neutrinos"></canvas>
       </div>
+      <aside class="ctl">
+        <h2>Messenger Controls</h2>
+        <div class="fld">
+          <label for="rB">Magnetic field strength (B) <output id="oB">35%</output></label>
+          <input type="range" id="rB" min="0" max="100" step="1" value="35">
+        </div>
+        <div class="fld">
+          <label for="rT">Dust torus optical depth (&tau;) <output id="oT">1.5</output></label>
+          <input type="range" id="rT" min="0" max="4" step="0.1" value="1.5">
+        </div>
+        <div class="chk" role="group" aria-label="Show messengers">
+          <label><input type="checkbox" id="sCr" checked><span class="sw" style="background:var(--crimson)"></span>Protons (CR)</label>
+          <label><input type="checkbox" id="sG" checked><span class="sw" style="background:var(--teal)"></span>Gamma rays</label>
+          <label><input type="checkbox" id="sN" checked><span class="sw" style="background:var(--amber-fill)"></span>Neutrinos</label>
+        </div>
+        <div class="btns">
+          <button class="b" id="bPause">Pause</button>
+          <button class="b" id="bClear">Clear counts</button>
+        </div>
+        <dl class="read" id="r1"></dl>
+        <p class="note">Spread is the typical angle between arrival direction and the true source. Dust optical depth &tau; = 1.5 absorbs ~78% of gamma rays. Protons scramble in magnetic fields, while neutrinos arrive within &plusmn;0.0° of true source direction.</p>
+      </aside>
+    </div>
+  </section>
 
-      <!-- Module Roadmap Cards -->
-      <article class="overview-card">
-        <h3><span>🗺️</span> Interactive Simulation Modules</h3>
-        <p>Select any module below to investigate the physics through interactive models:</p>
+  <!-- ==================== SLIDE 2: COLLISIONS & HADRONIC CASCADE ==================== -->
+  <section class="panel" id="p1" role="tabpanel" aria-labelledby="t1" hidden>
+    <h2 class="lead">When a high-energy neutrino strikes an atomic nucleus in the ice, weak boson exchange shatters the nucleon into a hadronic cascade.</h2>
+    <p class="from">Nobel Scientific Background Figure 2: Deep Inelastic Scattering (CC vs. NC channels) &middot; Quark fragmentation.</p>
+    <div class="grid">
+      <div class="stage">
+        <canvas id="cDIS" width="900" height="440" aria-label="Interactive Feynman diagram showing deep inelastic scattering split by collision channel with hadronic cascade fragmentation."></canvas>
         
-        <div class="roadmap-grid">
-          <div class="roadmap-item" onclick="App.selectTab('detector')">
-            <h4><span>🧊</span> 2. IceCube 3D Detector</h4>
-            <p>Interactive 3D digital twin of all 86 strings. Scrub time in nanoseconds, watch Cherenkov light expand, and explore historic events.</p>
-            <span class="val-badge val-badge-amber">Launch Module →</span>
-          </div>
-
-          <div class="roadmap-item" onclick="App.selectTab('sources')">
-            <h4><span>🔭</span> 3. Cosmic Sources &amp; Deflection</h4>
-            <p>Compare cosmic ray proton deflection in turbulent magnetic fields with laser-straight neutrino geodesics and gamma-ray dust absorption.</p>
-            <span class="val-badge val-badge-amber">Launch Module →</span>
-          </div>
-
-          <div class="roadmap-item" onclick="App.selectTab('cherenkov')">
-            <h4><span>🌊</span> 4. Cherenkov Optics</h4>
-            <p>Simulate the optical "sonic boom for light" created when charged particles exceed the local phase speed of light in polar ice (v &gt; c/n).</p>
-            <span class="val-badge val-badge-amber">Launch Module →</span>
-          </div>
-
-          <div class="roadmap-item" onclick="App.selectTab('dis')">
-            <h4><span>⚡</span> 5. Subatomic Collision (Quark DIS)</h4>
-            <p>Interactive Feynman diagram of Deep Inelastic Scattering. Compare Charged Current (W± muon tracks) with Neutral Current (Z⁰ cascades).</p>
-            <span class="val-badge val-badge-amber">Launch Module →</span>
-          </div>
-
-          <div class="roadmap-item" onclick="App.selectTab('sigmalab')">
-            <h4><span>📊</span> 6. 5-Sigma Discovery Challenge</h4>
-            <p>Learn how physicists extract ~100 cosmic signal events from 85 billion atmospheric background muons using Earth shielding and veto layers.</p>
-            <span class="val-badge val-badge-amber">Launch Module →</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Teacher Notes (visible in Teacher Mode) -->
-      <div id="teacherOverviewNotes" class="guide-card" style="display: none; border-left: 6px solid var(--primary-teal);">
-        <h3 style="color: var(--primary-teal-dark);"><span>🧪</span> Teacher Seminar Notes &amp; Discussion Prompts</h3>
-        <div class="guide-grid">
-          <div class="guide-col">
-            <p><strong>Lesson Starter Question:</strong> "Hold up your thumb. How many particles from space are passing through your thumbnail right now?"</p>
-            <p class="prompt-box">
-              <strong>Answer:</strong> Approximately 65 billion solar neutrinos pass through every square centimeter every second! Yet because their interaction cross-section is so tiny (&sigma; ~ 10⁻³⁸ cm²), an average human body absorbs only ~1 neutrino interaction in a 70-year lifetime.
-            </p>
-          </div>
-          <div class="guide-col">
-            <p><strong>Francis Halzen's Breakthrough:</strong></p>
-            <p>To detect particles that rarely interact, you need an enormous target volume. Water is transparent, and glacial ice under high pressure at the South Pole has had all air bubbles squeezed out into clathrate crystals, making it the clearest solid optical medium on Earth.</p>
-          </div>
+        <!-- Hadronic Cascade Explainer Callout Card -->
+        <div class="callout-card">
+          <h4><span>🔬</span> What is a Hadronic Cascade (Shower X)?</h4>
+          <p>
+            When the incoming PeV neutrino interacts with a quark in the proton or neutron with huge momentum transfer (\(Q^2 \gg 1\text{ GeV}^2\)), the struck quark is violently ripped out of the nucleon.
+          </p>
+          <p>
+            Because of <strong>color confinement</strong> (quarks cannot exist alone), the stretching gluon color flux tube snaps, creating quark-antiquark pairs (\(q\bar{q}\)) from the vacuum. This produces a collimated, relativistic spray of charged hadrons (\(\pi^{\pm}, p\)) and neutral hadrons (\(\pi^0 \to 2\gamma\)). Traveling faster than light in ice (\(c/n\)), the charged hadrons emit the intense blue Cherenkov flash recorded by the optical sensors!
+          </p>
         </div>
       </div>
-    </section>
 
-    <!-- =========================================================================
-         TAB 2: ICECUBE 3D DETECTOR (DIGITAL TWIN)
-         ========================================================================= -->
-    <section id="panelDetector" class="tab-panel">
-      <div class="lab-grid">
-        <!-- Visual Stage Card -->
-        <div class="stage-card">
-          <div class="stage-header">
-            <span class="stage-title"><span>🧊</span> IceCube 3D Detector Event Display (Digital Twin)</span>
-            <div class="color-legend">
-              <span>Timing:</span>
-              <span>Earliest (0 ns)</span>
-              <div class="color-bar-gradient"></div>
-              <span>Latest (3,000 ns)</span>
-            </div>
-          </div>
-
-          <div class="stage-viewport" id="viewport3dContainer">
-            <!-- Three.js canvas dynamically injected here -->
-          </div>
-
-          <!-- Bottom Scrubber Controls -->
-          <div class="stage-footer">
-            <div class="scrubber-controls">
-              <button class="btn-play" id="btnPlayPause" title="Play/Pause Event Time">▶</button>
-              <input type="range" id="scrubberTime" min="0" max="3000" value="3000">
-              <span class="time-readout" id="dispTime">3,000 ns</span>
-            </div>
+      <aside class="ctl">
+        <h2>Collision Channel</h2>
+        <div class="fld">
+          <span class="lab">Interaction Type</span>
+          <div class="btns" id="fl_dis" role="group" aria-label="Interaction channel">
+            <button class="b" data-f="mu_cc" aria-pressed="true">ν_μ CC (Muon Track)</button>
+            <button class="b" data-f="e_cc" aria-pressed="false">ν_e CC (EM Cascade)</button>
+            <button class="b" data-f="tau_cc" aria-pressed="false">ν_τ CC (Double Bang)</button>
+            <button class="b" data-f="nc" aria-pressed="false">Neutral Current (Z⁰)</button>
           </div>
         </div>
 
-        <!-- Sidebar Controls & Telemetry -->
-        <aside class="controls-card">
-          <div class="card-heading">
-            <span>Historic Event Presets</span>
-            <span class="val-badge" id="badgePresetEnergy">290 TeV</span>
-          </div>
-
-          <div class="pill-grid">
-            <button class="pill-btn active" data-preset="txs0506_2017">2017 TXS Blazar</button>
-            <button class="pill-btn" data-preset="bert_2013">2013 Bert (1 PeV)</button>
-            <button class="pill-btn" data-preset="ngc1068_2022">2022 NGC 1068</button>
-            <button class="pill-btn" data-preset="milkyway_2023">2023 Milky Way</button>
-            <button class="pill-btn" data-preset="background_muon">Atmospheric Muon</button>
-          </div>
-
-          <div class="card-heading">
-            <span>Camera Angle Presets</span>
-          </div>
-          <div class="pill-grid">
-            <button class="pill-btn active" data-cam="overview">3D Perspective</button>
-            <button class="pill-btn" data-cam="topdown">Top Sky Map</button>
-            <button class="pill-btn" data-cam="elevation">Depth Profile</button>
-            <button class="pill-btn" data-cam="deepcore">DeepCore</button>
-          </div>
-
-          <div class="card-heading">
-            <span>Live Telemetry Card</span>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-row">
-              <span class="telemetry-label">Event Preset:</span>
-              <span class="telemetry-val" id="hudEventName">TXS 0506+056 (2017)</span>
-            </div>
-            <div class="telemetry-row">
-              <span class="telemetry-label">Deposited Energy:</span>
-              <span class="telemetry-val" id="hudEnergy">290 TeV</span>
-            </div>
-            <div class="telemetry-row">
-              <span class="telemetry-label">Topology:</span>
-              <span class="telemetry-val" id="hudTopology">Upgoing Muon Track</span>
-            </div>
-            <div class="telemetry-row">
-              <span class="telemetry-label">Triggered DOMs:</span>
-              <span class="telemetry-val" id="hudDOMHits">78 / 5,160</span>
-            </div>
-            <div class="telemetry-row">
-              <span class="telemetry-label">Time Window:</span>
-              <span class="telemetry-val" id="hudTimeSpan">~1,840 ns</span>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <!-- Pedagogical Guide Card -->
-      <div class="guide-card">
-        <div class="guide-grid">
-          <div class="guide-col">
-            <h3><span>🔬</span> How to Read the 3D Display</h3>
-            <ul>
-              <li><strong>Strings &amp; DOMs:</strong> Vertical teal lines represent the 86 drilled cables. Gray dots represent the 5,160 Digital Optical Modules frozen between 1,450 m and 2,450 m depth.</li>
-              <li><strong>Hit Color (Arrival Time):</strong> Red spheres show the earliest detected photons. Orange, yellow, green, and blue show sequentially later hits.</li>
-              <li><strong>Sphere Size (Photoelectrons):</strong> The radius of each sphere scales with the amount of Cherenkov light (charge in photoelectrons) detected by that photomultiplier tube.</li>
-            </ul>
-          </div>
-          <div class="guide-col">
-            <h3><span>💡</span> Inquiry: Tracks vs. Cascades</h3>
-            <p>
-              Compare <strong>2017 TXS Blazar</strong> (a muon track) with <strong>2013 Bert</strong> (an electron/tau cascade):
-            </p>
-            <div class="prompt-box">
-              <strong>Question for Students:</strong> Why does a muon produce a long linear trail across the detector while an electron produces a spherical ball of light? Which one gives better angular resolution to find the source on the sky?
-            </div>
-          </div>
+        <div class="fld">
+          <label for="rY">Inelasticity fraction y (Hadron %) <output id="oY">0.28</output></label>
+          <input type="range" id="rY" min="0.05" max="0.95" step="0.01" value="0.28">
         </div>
-      </div>
-    </section>
 
-    <!-- =========================================================================
-         TAB 3: COSMIC SOURCES & DEFLECTION
-         ========================================================================= -->
-    <section id="panelSources" class="tab-panel">
-      <div class="lab-grid">
-        <div class="stage-card">
-          <div class="stage-header">
-            <span class="stage-title"><span>🔭</span> Cosmic Engine: Interstellar Magnetic Fields &amp; Torus Obscuration</span>
-          </div>
-          <div class="stage-viewport" style="height: 480px;">
-            <canvas id="canvasSources" class="stage-canvas"></canvas>
+        <dl class="read" id="rDIS"></dl>
+
+        <p class="note">
+          <strong>Charged Current (W⁺ exchange):</strong> Converts the neutrino into its charged lepton partner (&mu;⁻ makes tracks, e⁻ cascades, &tau;⁻ double bangs) plus the hadronic cascade.<br>
+          <strong>Neutral Current (Z⁰ exchange):</strong> The neutrino flies away unseen without light; <em>only</em> the hadronic cascade is detected!
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 3: ICE DETECTOR & FIGURE 3 ==================== -->
+  <section class="panel" id="p2" role="tabpanel" aria-labelledby="t2" hidden>
+    <h2 class="lead">A cubic kilometer of polar ice turned into an optical telescope: 86 strings, 5,160 sensors, and Cherenkov cones.</h2>
+    <p class="from">Deck slides: Use the ice itself as the detector &middot; How a neutrino makes light &middot; Nobel Scientific Background Figure 3.</p>
+    <div class="grid">
+      <div class="stage">
+        <!-- View Container 1: Official Schematic Figure 3 -->
+        <div class="figure-wrap" id="fig3Container">
+          <img src="assets/figure3-icecube-schematic.png" alt="A schematic illustration of the IceCube Neutrino Observatory." loading="eager">
+          <div class="figure-caption">
+            <strong>Figure 3.</strong> A schematic illustration of the IceCube Neutrino Observatory. <em>Figure credit: IceCube Collaboration.</em>
           </div>
         </div>
 
-        <aside class="controls-card">
-          <div class="card-heading">
-            <span>Cosmic Engine Controls</span>
-          </div>
-
-          <div class="ctrl-group">
-            <div class="ctrl-label-row">
-              <span>Magnetic Field (B):</span>
-              <span class="val-badge" id="valBField">2.5 nG</span>
-            </div>
-            <input type="range" id="sliderBField" min="0" max="10" step="0.5" value="2.5">
-          </div>
-
-          <div class="ctrl-group">
-            <label class="toggle-option">
-              <input type="checkbox" id="checkDustTorus" checked>
-              <span><strong>Dense Dust Torus (NGC 1068):</strong> Simulates obscuring dust around active galactic nuclei that absorbs gamma rays.</span>
-            </label>
-          </div>
-
-          <div class="ctrl-group">
-            <label class="ctrl-label-row">
-              <span>Particle Channel:</span>
-            </label>
-            <select id="selectChannel">
-              <option value="both">Both (Neutrinos &amp; Gamma Rays)</option>
-              <option value="pions_charged">Charged Pions (Neutrinos Only)</option>
-              <option value="pions_neutral">Neutral Pions (Gamma Rays Only)</option>
-            </select>
-          </div>
-        </aside>
-      </div>
-
-      <div class="guide-card">
-        <div class="guide-grid">
-          <div class="guide-col">
-            <h3><span>🔬</span> Physics of Cosmic Accelerators</h3>
-            <p>
-              Supermassive black holes accelerate charged protons to PeV energies. When protons collide with ambient photons, they undergo <strong>photopion production</strong>:
-            </p>
-            <p style="font-family: var(--font-mono); font-size: 0.84rem; background: var(--surface-alt); padding: 0.4rem; border-radius: 4px; border: 1px solid var(--border);">
-              p + &gamma; &rarr; &Delta;⁺ &rarr; n + &pi;⁺ (Charged Pion &rarr; &mu;⁺ + &nu;<sub>&mu;</sub>)<br>
-              p + &gamma; &rarr; &Delta;⁺ &rarr; p + &pi;⁰ (Neutral Pion &rarr; 2&gamma;)
-            </p>
-          </div>
-          <div class="guide-col">
-            <h3><span>💡</span> Inquiry Prompt</h3>
-            <div class="prompt-box">
-              <strong>Observe:</strong> As you increase the magnetic field strength (B), what happens to the red protons? Why do the amber neutrinos remain in completely straight trajectories regardless of the field?
-            </div>
-          </div>
+        <!-- View Container 2: Live Cherenkov Simulation Canvas -->
+        <div id="liveDetectorContainer" hidden>
+          <canvas id="c2" width="960" height="480" aria-label="Side view of strings of sensors in ice. A neutrino creates a charged particle that emits a cone of Cherenkov light and sensors light up in time order."></canvas>
         </div>
       </div>
-    </section>
 
-    <!-- =========================================================================
-         TAB 4: CHERENKOV OPTICS
-         ========================================================================= -->
-    <section id="panelCherenkov" class="tab-panel">
-      <div class="lab-grid">
-        <div class="stage-card">
-          <div class="stage-header">
-            <span class="stage-title"><span>🌊</span> Cherenkov Wave Tank ("Sonic Boom for Light")</span>
-          </div>
-          <div class="stage-viewport" style="height: 480px;">
-            <canvas id="canvasCherenkov" class="stage-canvas"></canvas>
+      <aside class="ctl">
+        <h2>Detector View</h2>
+        <div class="btns" id="viewToggleGroup" role="group" aria-label="Display mode">
+          <button class="b" data-view="figure3" aria-pressed="true">Official Schematic (Figure 3)</button>
+          <button class="b" data-view="live" aria-pressed="false">Live Cherenkov Event</button>
+        </div>
+
+        <h2>Event Generator</h2>
+        <div class="fld">
+          <span class="lab">Interaction Topology</span>
+          <div class="btns" id="fl" role="group" aria-label="Event topology">
+            <button class="b" data-f="mu" aria-pressed="true">ν_μ Track</button>
+            <button class="b" data-f="e" aria-pressed="false">ν_e Shower</button>
+            <button class="b" data-f="nc" aria-pressed="false">Neutral Current</button>
           </div>
         </div>
 
-        <aside class="controls-card">
-          <div class="card-heading">
-            <span>Optics &amp; Speed Controls</span>
-          </div>
-
-          <div class="ctrl-group">
-            <div class="ctrl-label-row">
-              <span>Particle Speed (&beta; = v/c):</span>
-              <span class="val-badge val-badge-amber" id="valBeta">0.950</span>
-            </div>
-            <input type="range" id="sliderBeta" min="0.65" max="0.999" step="0.005" value="0.95">
-          </div>
-
-          <div class="ctrl-group">
-            <label class="ctrl-label-row">
-              <span>Medium Refractive Index (n):</span>
-            </label>
-            <select id="selectIndex">
-              <option value="1.31">Antarctic Polar Ice (n = 1.31)</option>
-              <option value="1.00">Vacuum (n = 1.00, No shock possible)</option>
-              <option value="1.33">Liquid Water (n = 1.33)</option>
-              <option value="1.50">Dense Glass (n = 1.50)</option>
-            </select>
-          </div>
-
-          <div class="card-heading">
-            <span>Shockwave Derivation</span>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-row">
-              <span class="telemetry-label">Threshold Speed:</span>
-              <span class="telemetry-val" id="valThreshold">0.763 c</span>
-            </div>
-            <div class="telemetry-row">
-              <span class="telemetry-label">Cherenkov Angle:</span>
-              <span class="telemetry-val" id="valCherenkovAngle">&theta;<sub>c</sub> &approx; 41.2&deg;</span>
-            </div>
-            <div class="telemetry-row">
-              <span class="telemetry-label">Shockwave Status:</span>
-              <span class="telemetry-val" id="valShockStatus" style="color: var(--success);">ACTIVE (&beta; &gt; 1/n)</span>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <div class="guide-card">
-        <div class="guide-grid">
-          <div class="guide-col">
-            <h3><span>🔬</span> Physics of the Optical Shockwave</h3>
-            <p>
-              In a medium with refractive index \(n\), the phase velocity of light is reduced to \(c_{\text{medium}} = c / n\). In ice (\(n \approx 1.31\)), light travels at only \(\approx 228,850\text{ km/s}\).
-            </p>
-            <p>
-              When a charged particle (like a relativistic muon) moves faster than \(c/n\), electromagnetic wavelets emitted along its path pile up constructively into a conical shockwave, exactly like a supersonic jet's sonic boom!
-            </p>
-          </div>
-          <div class="guide-col">
-            <h3><span>💡</span> Mathematical Inquiry</h3>
-            <div class="prompt-box">
-              <strong>Equation:</strong> \(\cos \theta_c = \frac{1}{\beta n}\). Drag the speed slider down toward \(1/n \approx 0.763\). What happens to the opening angle \(\theta_c\) as \(\beta \to 1/n\)? What happens when \(\beta &lt; 1/n\)?
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- =========================================================================
-         TAB 5: SUBATOMIC COLLISION (QUARK DIS)
-         ========================================================================= -->
-    <section id="panelDIS" class="tab-panel">
-      <div class="lab-grid">
-        <div class="stage-card">
-          <div class="stage-header">
-            <span class="stage-title"><span>⚡</span> Deep Inelastic Scattering (Quark-Level Feynman Canvas)</span>
-          </div>
-          <div class="stage-viewport" style="height: 480px;">
-            <canvas id="canvasDIS" class="stage-canvas"></canvas>
-          </div>
+        <div class="fld">
+          <label for="rE">Neutrino energy <output id="oE">100 TeV</output></label>
+          <input type="range" id="rE" min="0" max="4" step="0.05" value="2">
         </div>
 
-        <aside class="controls-card">
-          <div class="card-heading">
-            <span>Interaction Parameters</span>
-          </div>
+        <div class="fld">
+          <label for="rP">Zenith arrival angle <output id="oP">25°</output></label>
+          <input type="range" id="rP" min="-80" max="80" step="1" value="25">
+        </div>
 
-          <div class="ctrl-group">
-            <label class="ctrl-label-row">
-              <span>Neutrino Flavor:</span>
-            </label>
-            <select id="selectFlavor">
-              <option value="mu">Muon Neutrino (&nu;<sub>&mu;</sub> &rarr; &mu; Track)</option>
-              <option value="e">Electron Neutrino (&nu;<sub>e</sub> &rarr; e Cascade)</option>
-              <option value="tau">Tau Neutrino (&nu;<sub>&tau;</sub> &rarr; &tau; Double Bang)</option>
-            </select>
-          </div>
+        <div class="fld">
+          <label for="rBeta">Particle speed (β = v/c) <output id="oBeta">1.000</output></label>
+          <input type="range" id="rBeta" min="0.7" max="1" step="0.001" value="1">
+        </div>
 
-          <div class="ctrl-group">
-            <label class="ctrl-label-row">
-              <span>Weak Current Type:</span>
-            </label>
-            <select id="selectMode">
-              <option value="CC">Charged Current (W&plusmn; Exchange)</option>
-              <option value="NC">Neutral Current (Z⁰ Exchange)</option>
-            </select>
-          </div>
+        <div class="btns">
+          <button class="b go" id="bFire">Fire Event</button>
+        </div>
 
-          <div class="ctrl-group">
-            <div class="ctrl-label-row">
-              <span>Inelasticity y (Hadronic %):</span>
-              <span class="val-badge val-badge-amber" id="valY">0.28</span>
-            </div>
-            <input type="range" id="sliderY" min="0.05" max="0.95" step="0.01" value="0.28">
-          </div>
-        </aside>
+        <dl class="read" id="r2"></dl>
+        <p class="note">Cherenkov shockwave angle \(\cos \theta_c = \frac{1}{\beta n} \approx 41^\circ\) in polar ice (\(n = 1.31\)). Sensor colors map arrival timing from Red (earliest hit) to Blue (latest hit).</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 4: SCALE & EARTH ABSORPTION ==================== -->
+  <section class="panel" id="p3" role="tabpanel" aria-labelledby="t3" hidden>
+    <h2 class="lead">Neutrinos almost never interact, so the target must be enormous. At high energy, so is the shadow of the Earth.</h2>
+    <p class="from">Deck slides: A cubic kilometer of ice with 5,160 sensors &middot; What is a neutrino &middot; Cross sections &amp; mean free path.</p>
+    <div class="grid">
+      <div class="stage">
+        <canvas id="c3" width="900" height="150" aria-label="Logarithmic ruler of detector size from 1 meter to 20 kilometers"></canvas>
+        <canvas id="c3b" width="900" height="300" aria-label="Fraction of neutrinos that survive passing through the Earth versus arrival angle"></canvas>
       </div>
+      <aside class="ctl">
+        <h2>Energy &amp; Scale</h2>
+        <div class="fld">
+          <label for="rE3">Neutrino energy <output id="oE3">1 PeV</output></label>
+          <input type="range" id="rE3" min="0" max="5.5" step="0.01" value="3">
+        </div>
 
-      <div class="guide-card">
-        <div class="guide-grid">
-          <div class="guide-col">
-            <h3><span>🔬</span> Electroweak Boson Exchange</h3>
-            <p>
-              When a neutrino collides with a quark inside an oxygen or hydrogen nucleus in the ice:
-            </p>
-            <ul>
-              <li><strong>Charged Current (CC):</strong> Exchanging a \(W^{\pm}\) boson transforms the neutrino into its charged lepton partner (\(\mu^-\), \(e^-\), or \(\tau^-\)).</li>
-              <li><strong>Neutral Current (NC):</strong> Exchanging a \(Z^0\) boson leaves the neutrino neutral. The neutrino flies away undetected, leaving only the shattered nuclear fragments as a hadronic shower.</li>
-            </ul>
-          </div>
-          <div class="guide-col">
-            <h3><span>💡</span> Inquiry: Inelasticity Fraction</h3>
-            <div class="prompt-box">
-              <strong>Inelasticity Parameter:</strong> \(y = \frac{E_{\text{had}}}{E_{\nu}}\). Slide \(y\) to 0.80. What happens to the energy split between the outgoing muon and the hadronic shower?
-            </div>
-          </div>
+        <div class="btns" id="pre3">
+          <button class="b" data-e="0.5">NGC 1068 · 3 TeV</button>
+          <button class="b" data-e="2.46">2017 Alert · 290 TeV</button>
+          <button class="b" data-e="3">2013 Bert · 1 PeV</button>
+          <button class="b" data-e="4.06">Record · 11.4 PeV</button>
+          <button class="b" data-e="5.34">KM3NeT · 220 PeV</button>
+        </div>
+
+        <div class="fld">
+          <label for="rL">Detector side length <output id="oL">1 km</output></label>
+          <input type="range" id="rL" min="0" max="4.3" step="0.01" value="3">
+        </div>
+
+        <dl class="read" id="r3"></dl>
+        <p class="note">At TeV energies the Earth is transparent. Above 100 TeV the core becomes opaque, casting a shadow that stops upgoing events!</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 5: HOW SURE IS SURE ==================== -->
+  <section class="panel" id="p4" role="tabpanel" aria-labelledby="t4" hidden>
+    <h2 class="lead">A few hundred cosmic signal events hide inside tens of thousands of atmospheric background events. Systematic modeling decides who wins.</h2>
+    <p class="from">Deck slides: 2013 first cosmic neutrinos &middot; 2022 NGC 1068 (4.2&sigma;) &middot; 2026 Galactic plane discovery (5.7&sigma;).</p>
+    <div class="grid">
+      <div class="stage">
+        <canvas id="c4" width="900" height="320" aria-label="Expected count distributions with 3-sigma and 5-sigma discovery thresholds"></canvas>
+        <div class="scroll">
+          <table class="sig" id="tSig">
+            <thead>
+              <tr>
+                <th>Historical Discovery Result</th>
+                <th>Significance</th>
+                <th>One-Sided p-value</th>
+                <th>Odds of a Fluke</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
-    </section>
 
-    <!-- =========================================================================
-         TAB 6: 5-SIGMA DISCOVERY LAB
-         ========================================================================= -->
-    <section id="panelSigma" class="tab-panel">
-      <div id="containerSigmaLab" style="min-height: 400px;">
-        <!-- Injected dynamically by Modules2D.DiscoveryLab -->
-      </div>
-
-      <div class="guide-card">
-        <div class="guide-grid">
-          <div class="guide-col">
-            <h3><span>🔬</span> The 5-Sigma Standard in Particle Physics</h3>
-            <p>
-              In particle physics, a discovery requires a statistical significance of \(5\sigma\), corresponding to a \(p\)-value of less than \(2.9 \times 10^{-7}\) (less than 1 chance in 3.5 million of being a random background fluctuation).
-            </p>
-            <p>
-              IceCube achieved \(5.7\sigma\) discovery significance for extraterrestrial neutrinos by combining deep Earth shielding (using Earth rock to stop atmospheric muons) with the High-Energy Starting Event (HESE) outer veto layer.
-            </p>
-          </div>
-          <div class="guide-col">
-            <h3><span>💡</span> Inquiry Challenge</h3>
-            <div class="prompt-box">
-              <strong>Test:</strong> Uncheck the "Earth Overburden" filter. What happens to the background rate and your statistical significance \(\sigma\)? Can you claim a discovery without planetary filtering?
-            </div>
-          </div>
+      <aside class="ctl">
+        <h2>Discovery Experiment</h2>
+        <div class="fld">
+          <label for="rb">Expected background events <output id="ob">2,500</output></label>
+          <input type="range" id="rb" min="1" max="5" step="0.01" value="3.4">
         </div>
-      </div>
-    </section>
 
-  </div>
+        <div class="fld">
+          <label for="rs">True cosmic signal events <output id="os">250</output></label>
+          <input type="range" id="rs" min="0" max="2000" step="5" value="250">
+        </div>
 
-  <!-- Local Offline-Ready Three.js -->
-  <script src="js/libs/three.min.js"></script>
-  <script src="js/libs/OrbitControls.js"></script>
+        <div class="fld">
+          <label for="rf">Background model error (&plusmn;%) <output id="of">0.0%</output></label>
+          <input type="range" id="rf" min="0" max="10" step="0.1" value="0">
+        </div>
 
-  <!-- Physics Engine & Simulation Modules -->
-  <script src="js/physics.js"></script>
-  <script src="js/detector.js"></script>
-  <script src="js/renderer3d.js"></script>
-  <script src="js/modules2d.js"></script>
-  <script src="js/audio.js"></script>
-  <script src="js/main.js"></script>
+        <div class="btns">
+          <button class="b go" id="bRun">Run One Experiment</button>
+          <button class="b" id="bRun200">Run 200 Repeats</button>
+        </div>
+
+        <div id="r4" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <p class="note">In particle physics, 3&sigma; is "Evidence" and 5&sigma; is the golden standard of "Definitive Discovery". Try adding 3% background model error to observe how systematic uncertainties degrade significance.</p>
+      </aside>
+    </div>
+  </section>
+
+</div>
+
+<script src="js/presentation.js"></script>
 </body>
 </html>
