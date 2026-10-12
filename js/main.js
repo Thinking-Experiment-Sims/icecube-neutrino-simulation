@@ -1,38 +1,89 @@
 /**
  * main.js - Master Application Coordinator
  * The Thinking Experiment: IceCube Neutrino Observatory
+ * Commemorating the 2026 Nobel Prize in Physics (Francis Halzen)
  * Authored for Vladimir Lopez · 2026
  */
 
 window.App = (() => {
-  let currentMode = 'guided'; // 'guided' (default) or 'sandbox'
-  let currentView = 'detector'; // 'detector', 'sources', 'dis', 'cherenkov', 'sigmalab'
+  let activeTab = 'overview';
   let activePresetKey = 'txs0506_2017';
-  let currentEventSimulation = null;
-
-  // 3D Playback Scrubber State
   let isPlayingScrubber = false;
   let scrubberCurrentTimeNs = 3000;
   let scrubberMaxTimeNs = 3000;
   let scrubberAnimationId = null;
   let lastAudioTickTime = 0;
+  let isTeacherMode = false;
+  let is3DInitialized = false;
+
+  const TAB_BANNERS = {
+    overview: {
+      title: "1. Laboratory Orientation & Nobel Prize Setup",
+      desc: "Understand why Francis Halzen built a 1-billion-ton neutrino detector under the South Pole ice, how ghost particles reveal hidden black holes, and how to use each interactive simulation module."
+    },
+    detector: {
+      title: "2. IceCube 3D Detector (Digital Twin)",
+      desc: "Interact with all 86 strings and 5,160 optical sensors frozen 1.5–2.5 km under Antarctic ice. Drag to rotate in 3D, scrub time to observe Cherenkov light cones expand, and compare historic discoveries."
+    },
+    sources: {
+      title: "3. Cosmic Sources & Deflection Engine",
+      desc: "Compare how charged protons bend in intergalactic magnetic fields while neutral neutrinos travel in straight geodesics from blazars and obscured black holes directly to Earth."
+    },
+    cherenkov: {
+      title: "4. Cherenkov Optics Wave Tank",
+      desc: "Observe the optical 'sonic boom for light' created when a charged particle moves faster than the phase velocity of light in polar ice (v > c/n), deriving the Mach cone angle θ_c = arccos(1 / (βn))."
+    },
+    dis: {
+      title: "5. Subatomic Collision (Deep Inelastic Scattering)",
+      desc: "Explore electroweak boson exchange when a cosmic neutrino strikes an atomic nucleus in the ice. Compare Charged Current (W± muon tracks and electron cascades) with Neutral Current (Z⁰ showers)."
+    },
+    sigmalab: {
+      title: "6. 5-Sigma Discovery Challenge",
+      desc: "Investigate how physicists reject 85 billion surface atmospheric muons per year using planetary rock shielding and outer veto sensors to confirm a 5.7σ discovery of cosmic neutrinos."
+    }
+  };
 
   function init() {
     setupHeaderControls();
-    setupModeSwitcher();
+    setupScenarioTabs();
+    setupDetectorControls();
+    setupSourcesControls();
+    setupCherenkovControls();
+    setupDISControls();
 
-    // Initialize Guided Seminar Walkthrough (Default mode as requested)
-    const sidebar = document.getElementById('walkthroughSidebar');
-    if (sidebar) {
-      GuidedWalkthrough.init(sidebar, onWalkthroughStepChanged);
-    }
+    // Start on Overview tab
+    selectTab('overview');
 
-    // Default view is the 3D IceCube detector displaying TXS 0506+056
-    mountView('detector');
-    loadPreset(activePresetKey);
+    // Trigger initial KaTeX rendering if available
+    setTimeout(() => {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body);
+      }
+    }, 200);
   }
 
+  // --- Header Controls (Mode, Audio, Fullscreen) ---
   function setupHeaderControls() {
+    const btnStudent = document.getElementById('btnModeStudent');
+    const btnTeacher = document.getElementById('btnModeTeacher');
+    const teacherNotes = document.getElementById('teacherOverviewNotes');
+
+    if (btnStudent && btnTeacher) {
+      btnStudent.onclick = () => {
+        isTeacherMode = false;
+        btnStudent.classList.add('active');
+        btnTeacher.classList.remove('active');
+        if (teacherNotes) teacherNotes.style.display = 'none';
+      };
+
+      btnTeacher.onclick = () => {
+        isTeacherMode = true;
+        btnTeacher.classList.add('active');
+        btnStudent.classList.remove('active');
+        if (teacherNotes) teacherNotes.style.display = 'block';
+      };
+    }
+
     // Audio Toggle
     const btnAudio = document.getElementById('btnAudioToggle');
     const audioIcon = document.getElementById('audioIcon');
@@ -46,13 +97,12 @@ window.App = (() => {
 
         if (nowMuted) {
           btnAudio.classList.remove('active');
-          audioIcon.textContent = '🔇';
-          audioLabel.textContent = 'Audio: OFF';
+          if (audioIcon) audioIcon.textContent = '🔇';
+          if (audioLabel) audioLabel.textContent = 'Audio: OFF';
         } else {
           btnAudio.classList.add('active');
-          audioIcon.textContent = '🔊';
-          audioLabel.textContent = 'Audio: ON';
-          // Play a gentle confirmation ping
+          if (audioIcon) audioIcon.textContent = '🔊';
+          if (audioLabel) audioLabel.textContent = 'Audio: ON';
           SoundFX.playDomHit(0.5, 5);
         }
       };
@@ -71,141 +121,110 @@ window.App = (() => {
     }
   }
 
-  function setupModeSwitcher() {
-    const btnGuided = document.getElementById('modeGuided');
-    const btnSandbox = document.getElementById('modeSandbox');
-    const viewGuided = document.getElementById('viewGuided');
-    const viewSandbox = document.getElementById('viewSandbox');
-
-    if (btnGuided && btnSandbox) {
-      btnGuided.onclick = () => {
-        currentMode = 'guided';
-        btnGuided.classList.add('active');
-        btnSandbox.classList.remove('active');
-        viewGuided.style.display = 'flex';
-        viewSandbox.style.display = 'none';
-        mountView(currentView);
-      };
-
-      btnSandbox.onclick = () => {
-        currentMode = 'sandbox';
-        btnSandbox.classList.add('active');
-        btnGuided.classList.remove('active');
-        viewGuided.style.display = 'none';
-        viewSandbox.style.display = 'flex';
-        setupSandboxTabs();
-        mountView(currentView);
-      };
-    }
-  }
-
-  function setupSandboxTabs() {
-    const tabs = document.querySelectorAll('.sandbox-tab-bar .tab-btn');
+  // --- Scenario Tab Navigation ---
+  function setupScenarioTabs() {
+    const tabs = document.querySelectorAll('.scenario-nav .scenario-tab');
     tabs.forEach(btn => {
       btn.onclick = () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        const targetTab = btn.getAttribute('data-tab');
-        switchView(targetTab);
+        const target = btn.getAttribute('data-tab');
+        selectTab(target);
       };
     });
   }
 
-  function onWalkthroughStepChanged(stepIndex, stepData) {
-    // Synchronize simulation display based on step requirements
-    // (stepData.action in guidedWalkthrough already calls switchView if needed)
-  }
+  function selectTab(tabKey) {
+    activeTab = tabKey;
 
-  /**
-   * Switch the active simulation module
-   */
-  function switchView(viewName) {
-    currentView = viewName;
-
-    // Update active tab button in sandbox bar if visible
-    const tabs = document.querySelectorAll('.sandbox-tab-bar .tab-btn');
+    // Update navigation buttons
+    const tabs = document.querySelectorAll('.scenario-nav .scenario-tab');
     tabs.forEach(btn => {
-      if (btn.getAttribute('data-tab') === viewName) {
+      if (btn.getAttribute('data-tab') === tabKey) {
         btn.classList.add('active');
       } else {
         btn.classList.remove('active');
       }
     });
 
-    mountView(viewName);
-  }
+    // Update Banner Title & Description
+    const bannerTitle = document.getElementById('bannerTitle');
+    const bannerDesc = document.getElementById('bannerDesc');
+    if (TAB_BANNERS[tabKey]) {
+      if (bannerTitle) bannerTitle.textContent = TAB_BANNERS[tabKey].title;
+      if (bannerDesc) bannerDesc.textContent = TAB_BANNERS[tabKey].desc;
+    }
 
-  /**
-   * Mount template content into the active view container
-   */
-  function mountView(viewName) {
-    const targetContainer = currentMode === 'guided'
-      ? document.getElementById('activeSimContainer')
-      : document.getElementById('sandboxContent');
+    // Switch panels
+    const panels = {
+      overview: document.getElementById('panelOverview'),
+      detector: document.getElementById('panelDetector'),
+      sources: document.getElementById('panelSources'),
+      cherenkov: document.getElementById('panelCherenkov'),
+      dis: document.getElementById('panelDIS'),
+      sigmalab: document.getElementById('panelSigma')
+    };
 
-    if (!targetContainer) return;
-    targetContainer.innerHTML = '';
+    Object.keys(panels).forEach(key => {
+      if (panels[key]) {
+        panels[key].classList.toggle('active', key === tabKey);
+      }
+    });
 
-    if (viewName === 'detector') {
-      const tmpl = document.getElementById('detectorTemplate');
-      if (tmpl) {
-        targetContainer.innerHTML = tmpl.innerHTML;
-        bindDetectorControls(targetContainer);
-        const vp = targetContainer.querySelector('#viewport3d');
-        if (vp) Renderer3D.init(vp);
-        loadPreset(activePresetKey);
-      }
-    } else if (viewName === 'sources') {
-      const tmpl = document.getElementById('sourcesTemplate');
-      if (tmpl) {
-        targetContainer.innerHTML = tmpl.innerHTML;
-        const cvs = targetContainer.querySelector('#canvasSources');
-        if (cvs) {
-          cvs.width = cvs.parentElement.clientWidth || 800;
-          cvs.height = (cvs.parentElement.clientHeight - 64) || 500;
-          Modules2D.CosmicEngine.init(cvs);
+    // Trigger specific tab initializers
+    if (tabKey === 'detector') {
+      const container3d = document.getElementById('viewport3dContainer');
+      if (container3d) {
+        if (!is3DInitialized) {
+          Renderer3D.init(container3d);
+          is3DInitialized = true;
+          loadPreset(activePresetKey);
+        } else {
+          setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+          }, 50);
         }
-        bindSourcesControls(targetContainer);
       }
-    } else if (viewName === 'dis') {
-      const tmpl = document.getElementById('disTemplate');
-      if (tmpl) {
-        targetContainer.innerHTML = tmpl.innerHTML;
-        const cvs = targetContainer.querySelector('#canvasDIS');
-        if (cvs) {
-          cvs.width = cvs.parentElement.clientWidth || 800;
-          cvs.height = (cvs.parentElement.clientHeight - 64) || 500;
-          Modules2D.SubatomicDIS.init(cvs);
-        }
-        bindDISControls(targetContainer);
+    } else if (tabKey === 'sources') {
+      const cvs = document.getElementById('canvasSources');
+      if (cvs) {
+        cvs.width = cvs.parentElement.clientWidth || 800;
+        cvs.height = cvs.parentElement.clientHeight || 480;
+        Modules2D.CosmicEngine.init(cvs);
       }
-    } else if (viewName === 'cherenkov') {
-      const tmpl = document.getElementById('cherenkovTemplate');
-      if (tmpl) {
-        targetContainer.innerHTML = tmpl.innerHTML;
-        const cvs = targetContainer.querySelector('#canvasCherenkov');
-        if (cvs) {
-          cvs.width = cvs.parentElement.clientWidth || 800;
-          cvs.height = (cvs.parentElement.clientHeight - 64) || 500;
-          Modules2D.CherenkovWaveTank.init(cvs);
-        }
-        bindCherenkovControls(targetContainer);
+    } else if (tabKey === 'cherenkov') {
+      const cvs = document.getElementById('canvasCherenkov');
+      if (cvs) {
+        cvs.width = cvs.parentElement.clientWidth || 800;
+        cvs.height = cvs.parentElement.clientHeight || 480;
+        Modules2D.CherenkovWaveTank.init(cvs);
       }
-    } else if (viewName === 'sigmalab') {
-      const tmpl = document.getElementById('sigmalabTemplate');
-      if (tmpl) {
-        targetContainer.innerHTML = tmpl.innerHTML;
-        const labDiv = targetContainer.querySelector('#containerSigmaLab');
-        if (labDiv) Modules2D.DiscoveryLab.init(labDiv);
+      updateCherenkovCalculations();
+    } else if (tabKey === 'dis') {
+      const cvs = document.getElementById('canvasDIS');
+      if (cvs) {
+        cvs.width = cvs.parentElement.clientWidth || 800;
+        cvs.height = cvs.parentElement.clientHeight || 480;
+        Modules2D.SubatomicDIS.init(cvs);
+      }
+    } else if (tabKey === 'sigmalab') {
+      const labDiv = document.getElementById('containerSigmaLab');
+      if (labDiv) {
+        Modules2D.DiscoveryLab.init(labDiv);
       }
     }
+
+    // Re-render KaTeX math if elements switched
+    setTimeout(() => {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body);
+      }
+    }, 80);
   }
 
-  // --- 3D Detector Controls Binding ---
-  function bindDetectorControls(container) {
-    const btnPlay = container.querySelector('#btnPlayPause');
-    const scrubber = container.querySelector('#scrubberTime');
-    const dispTime = container.querySelector('#dispTime');
+  // --- 3D Detector Controls ---
+  function setupDetectorControls() {
+    const btnPlay = document.getElementById('btnPlayPause');
+    const scrubber = document.getElementById('scrubberTime');
+    const dispTime = document.getElementById('dispTime');
 
     if (btnPlay && scrubber) {
       btnPlay.onclick = () => {
@@ -228,8 +247,8 @@ window.App = (() => {
       };
     }
 
-    // Presets
-    const presetBtns = container.querySelectorAll('.btn-preset');
+    // Historic Presets
+    const presetBtns = document.querySelectorAll('#panelDetector .pill-btn[data-preset]');
     presetBtns.forEach(btn => {
       btn.onclick = () => {
         presetBtns.forEach(b => b.classList.remove('active'));
@@ -240,9 +259,11 @@ window.App = (() => {
     });
 
     // Camera Views
-    const camBtns = container.querySelectorAll('.btn-cam');
+    const camBtns = document.querySelectorAll('#panelDetector .pill-btn[data-cam]');
     camBtns.forEach(btn => {
       btn.onclick = () => {
+        camBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         const camView = btn.getAttribute('data-cam');
         Renderer3D.setCameraPreset(camView);
       };
@@ -253,7 +274,7 @@ window.App = (() => {
     function step() {
       if (!isPlayingScrubber) return;
 
-      scrubberCurrentTimeNs += 18; // Speed step in ns per frame
+      scrubberCurrentTimeNs += 18;
       if (scrubberCurrentTimeNs > scrubberMaxTimeNs) {
         scrubberCurrentTimeNs = scrubberMaxTimeNs;
         isPlayingScrubber = false;
@@ -262,126 +283,180 @@ window.App = (() => {
 
       slider.value = scrubberCurrentTimeNs;
       if (display) display.textContent = `${Math.round(scrubberCurrentTimeNs)} ns`;
+
       Renderer3D.updateHitsDisplay(scrubberCurrentTimeNs, scrubberMaxTimeNs);
 
-      // Audio cues during playback
-      if (scrubberCurrentTimeNs - lastAudioTickTime > 120) {
-        lastAudioTickTime = scrubberCurrentTimeNs;
-        const norm = scrubberMaxTimeNs > 0 ? scrubberCurrentTimeNs / scrubberMaxTimeNs : 0;
-        SoundFX.playDomHit(norm, 2);
+      // Play accessible audio sonification
+      if (!SoundFX.isMuted()) {
+        const now = performance.now();
+        if (now - lastAudioTickTime > 120) {
+          const normT = scrubberCurrentTimeNs / scrubberMaxTimeNs;
+          SoundFX.playDomHit(normT, 12);
+          lastAudioTickTime = now;
+        }
       }
 
       if (isPlayingScrubber) {
         scrubberAnimationId = requestAnimationFrame(step);
       }
     }
+
     scrubberAnimationId = requestAnimationFrame(step);
   }
 
   function loadPreset(presetKey) {
     activePresetKey = presetKey;
-    const preset = Detector.PRESETS[presetKey];
-    if (!preset) return;
+    const sim = Detector.simulateEvent(presetKey);
+    if (!sim) return;
 
-    // Simulate Cherenkov light in the detector array
-    currentEventSimulation = Detector.simulateEventLight(preset);
-
-    // Update scrubber bounds
-    scrubberMaxTimeNs = Math.max(1000, currentEventSimulation.timeSpanNs + 100);
-    scrubberCurrentTimeNs = scrubberMaxTimeNs; // show fully developed event initially
-
+    scrubberMaxTimeNs = sim.maxTimeNs || 3000;
     const scrubber = document.getElementById('scrubberTime');
-    const dispTime = document.getElementById('dispTime');
     if (scrubber) {
       scrubber.max = scrubberMaxTimeNs;
-      scrubber.value = scrubberCurrentTimeNs;
+      scrubber.value = scrubberMaxTimeNs;
     }
+    scrubberCurrentTimeNs = scrubberMaxTimeNs;
+
+    const dispTime = document.getElementById('dispTime');
     if (dispTime) dispTime.textContent = `${Math.round(scrubberCurrentTimeNs)} ns`;
 
-    // Update 3D Visuals
-    Renderer3D.setEventGeometry(preset);
-    Renderer3D.updateHitsDisplay(scrubberCurrentTimeNs, scrubberMaxTimeNs);
-
-    // Update Telemetry HUD
-    const hudTitle = document.getElementById('hudEventTitle');
+    // Update Telemetry & HUD
     const hudName = document.getElementById('hudEventName');
     const hudEnergy = document.getElementById('hudEnergy');
     const hudTopo = document.getElementById('hudTopology');
     const hudHits = document.getElementById('hudDOMHits');
-    const hudTime = document.getElementById('hudTimeSpan');
+    const hudSpan = document.getElementById('hudTimeSpan');
+    const badgeEnergy = document.getElementById('badgePresetEnergy');
 
-    if (hudName) hudName.textContent = preset.name;
-    if (hudEnergy) hudEnergy.textContent = `${preset.energyTeV} TeV (${preset.flavor})`;
-    if (hudTopo) hudTopo.textContent = preset.type === 'track' ? 'Muon Cherenkov Track' : 'Spherical Cascade';
-    if (hudHits) hudHits.textContent = `${currentEventSimulation.totalHits} / 5,160 DOMs`;
-    if (hudTime) hudTime.textContent = `~${Math.round(currentEventSimulation.timeSpanNs)} ns`;
+    if (hudName) hudName.textContent = sim.preset.title;
+    if (hudEnergy) hudEnergy.textContent = `${sim.preset.energyTeV >= 1000 ? (sim.preset.energyTeV / 1000).toFixed(1) + ' PeV' : sim.preset.energyTeV + ' TeV'}`;
+    if (badgeEnergy) badgeEnergy.textContent = hudEnergy ? hudEnergy.textContent : '';
+    if (hudTopo) hudTopo.textContent = sim.preset.topology;
+    if (hudHits) hudHits.textContent = `${sim.hitDOMCount} / 5,160`;
+    if (hudSpan) hudSpan.textContent = `~${Math.round(sim.maxTimeNs)} ns`;
 
-    // Sound effect on load
-    if (preset.type === 'cascade') {
-      SoundFX.playCascadeBoom(preset.energyTeV);
-    } else {
-      SoundFX.playMuonStreak();
-    }
+    Renderer3D.setEventGeometry(sim.event);
+    Renderer3D.updateHitsDisplay(scrubberCurrentTimeNs, scrubberMaxTimeNs);
   }
 
-  // --- 2D Controls Bindings ---
-  function bindSourcesControls(container) {
-    const sliderB = container.querySelector('#sliderBField');
-    const valB = container.querySelector('#valBField');
-    const checkDust = container.querySelector('#checkDustTorus');
-    const selChan = container.querySelector('#selectChannel');
+  // --- Sources Controls ---
+  function setupSourcesControls() {
+    const sliderB = document.getElementById('sliderBField');
+    const valB = document.getElementById('valBField');
+    const checkDust = document.getElementById('checkDustTorus');
+    const selectChan = document.getElementById('selectChannel');
 
     if (sliderB) {
       sliderB.oninput = (e) => {
-        valB.textContent = `${e.target.value} nG`;
+        if (valB) valB.textContent = `${parseFloat(e.target.value).toFixed(1)} nG`;
         Modules2D.CosmicEngine.setBField(e.target.value);
       };
     }
+
     if (checkDust) {
-      checkDust.onchange = (e) => Modules2D.CosmicEngine.setDustTorus(e.target.checked);
+      checkDust.onchange = (e) => {
+        Modules2D.CosmicEngine.setDustTorus(e.target.checked);
+      };
     }
-    if (selChan) {
-      selChan.onchange = (e) => Modules2D.CosmicEngine.setChannel(e.target.value);
+
+    if (selectChan) {
+      selectChan.onchange = (e) => {
+        Modules2D.CosmicEngine.setChannel(e.target.value);
+      };
     }
   }
 
-  function bindDISControls(container) {
-    const selFlavor = container.querySelector('#selectFlavor');
-    const selMode = container.querySelector('#selectMode');
-    const sliderY = container.querySelector('#sliderY');
-    const valY = container.querySelector('#valY');
+  // --- Cherenkov Controls ---
+  function setupCherenkovControls() {
+    const sliderBeta = document.getElementById('sliderBeta');
+    const selectIndex = document.getElementById('selectIndex');
 
-    if (selFlavor) selFlavor.onchange = (e) => Modules2D.SubatomicDIS.setFlavor(e.target.value);
-    if (selMode) selMode.onchange = (e) => Modules2D.SubatomicDIS.setMode(e.target.value);
+    if (sliderBeta) {
+      sliderBeta.oninput = (e) => {
+        Modules2D.CherenkovWaveTank.setBeta(e.target.value);
+        updateCherenkovCalculations();
+      };
+    }
+
+    if (selectIndex) {
+      selectIndex.onchange = (e) => {
+        Modules2D.CherenkovWaveTank.setIndex(e.target.value);
+        updateCherenkovCalculations();
+      };
+    }
+  }
+
+  function updateCherenkovCalculations() {
+    const sliderBeta = document.getElementById('sliderBeta');
+    const selectIndex = document.getElementById('selectIndex');
+    const valBeta = document.getElementById('valBeta');
+    const valTh = document.getElementById('valThreshold');
+    const valAngle = document.getElementById('valCherenkovAngle');
+    const valStatus = document.getElementById('valShockStatus');
+
+    if (!sliderBeta || !selectIndex) return;
+
+    const beta = parseFloat(sliderBeta.value);
+    const n = parseFloat(selectIndex.value);
+    const threshold = 1 / n;
+
+    if (valBeta) valBeta.textContent = beta.toFixed(3);
+    if (valTh) valTh.textContent = `${threshold.toFixed(3)} c`;
+
+    if (beta > threshold) {
+      const cosTheta = 1 / (beta * n);
+      const angleRad = Math.acos(Math.min(1.0, cosTheta));
+      const angleDeg = (angleRad * (180 / Math.PI)).toFixed(1);
+      if (valAngle) valAngle.innerHTML = `&theta;<sub>c</sub> &approx; ${angleDeg}&deg;`;
+      if (valStatus) {
+        valStatus.textContent = 'ACTIVE (β > 1/n)';
+        valStatus.style.color = 'var(--success)';
+      }
+    } else {
+      if (valAngle) valAngle.textContent = 'None (Subluminal)';
+      if (valStatus) {
+        valStatus.textContent = 'INACTIVE (β < 1/n)';
+        valStatus.style.color = 'var(--danger)';
+      }
+    }
+  }
+
+  // --- Subatomic DIS Controls ---
+  function setupDISControls() {
+    const selectFlavor = document.getElementById('selectFlavor');
+    const selectMode = document.getElementById('selectMode');
+    const sliderY = document.getElementById('sliderY');
+    const valY = document.getElementById('valY');
+
+    if (selectFlavor) {
+      selectFlavor.onchange = (e) => {
+        Modules2D.SubatomicDIS.setFlavor(e.target.value);
+      };
+    }
+
+    if (selectMode) {
+      selectMode.onchange = (e) => {
+        Modules2D.SubatomicDIS.setMode(e.target.value);
+      };
+    }
+
     if (sliderY) {
       sliderY.oninput = (e) => {
-        valY.textContent = e.target.value;
+        if (valY) valY.textContent = parseFloat(e.target.value).toFixed(2);
         Modules2D.SubatomicDIS.setInelasticity(e.target.value);
       };
     }
   }
 
-  function bindCherenkovControls(container) {
-    const sliderB = container.querySelector('#sliderBeta');
-    const valB = container.querySelector('#valBeta');
-    const selIdx = container.querySelector('#selectIndex');
-
-    if (sliderB) {
-      sliderB.oninput = (e) => {
-        valB.textContent = parseFloat(e.target.value).toFixed(3);
-        Modules2D.CherenkovWaveTank.setBeta(e.target.value);
-      };
-    }
-    if (selIdx) {
-      selIdx.onchange = (e) => Modules2D.CherenkovWaveTank.setIndex(e.target.value);
-    }
+  // Auto-initialize when window loads
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 
-  // Initialize on DOM load
-  window.addEventListener('DOMContentLoaded', init);
-
   return {
-    switchView,
+    selectTab,
     loadPreset
   };
 })();
