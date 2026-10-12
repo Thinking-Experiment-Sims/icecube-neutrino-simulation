@@ -89,6 +89,28 @@
     hist: {}, em: {}, fin: {}, ar: {}, ss: {}
   };
 
+  function seedParticles1() {
+    for (let i = 0; i < 22; i++) {
+      const types = ["cr", "g", "n"];
+      const t = types[i % 3];
+      const startX = S1.SX + 35 + Math.random() * (S1.DX - S1.SX - 90);
+      const dy = t === "cr" ? Math.sin((startX * 0.02) + ((S1.H / 2) * 0.03)) * (S1.B * 0.35) : (Math.random() - 0.5) * 8;
+      const p = {
+        t,
+        x: startX,
+        y: S1.H / 2 + dy,
+        a: (Math.random() - 0.5) * 0.03,
+        tr: [],
+        dead: 0,
+        checkedDust: startX > S1.SX + 80
+      };
+      for (let s = 8; s >= 0; s--) {
+        p.tr.push([p.x - s * 8, p.y]);
+      }
+      S1.parts.push(p);
+    }
+  }
+
   function reset1() {
     ["cr", "g", "n"].forEach((k) => {
       S1.hist[k] = new Array(S1.nb).fill(0);
@@ -97,6 +119,7 @@
     S1.parts = []; S1.flash = [];
   }
   reset1();
+  seedParticles1();
 
   const g1 = ctx("#c1", S1.W, S1.H);
   const gh = ctx("#h1", 900, 170);
